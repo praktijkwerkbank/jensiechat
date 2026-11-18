@@ -2,6 +2,10 @@
 
 All notable changes to Jensiechat are listed here. The version number lives in one place in the code (`JC_VERSIE` in `code/jensiechat/lib.php`) and in the metadata of `SKILL.md`.
 
+## 1.0.1 (2026-11-18)
+
+- Accounts on the test list of an automation are no longer held to the rule "the same person gets the same message at most once per 24 hours", so you can test your own keyword again right after an earlier test. The rule still applies to everyone else.
+
 ## 1.0.0 (2026-11-18)
 
 First public release, the basic version.

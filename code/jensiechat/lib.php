@@ -16,7 +16,7 @@
 // Bewaard: gebruikersnaam en -ID, reactie, post, tijd, verstuurd, geklikt. Na 90 dagen worden naam, ID en tekst gewist; de cijfers blijven.
 if (!defined('JC_APP')) { http_response_code(404); exit; }
 
-const JC_VERSIE = '1.0.0';
+const JC_VERSIE = '1.0.1';
 const JC_BEWAAR_DAGEN = 90;          // daarna naam, ID en tekst wissen
 const JC_ZELFDE_PERSOON_UREN = 24;   // dezelfde persoon krijgt hetzelfde bericht hooguit een keer per etmaal
 const JC_PRIVATE_REPLY_DAGEN = 7;    // Meta: een privébericht op een reactie kan tot 7 dagen na de reactie
@@ -464,7 +464,8 @@ function jc_nieuwe_reactie_tx($db, $c, $cid, $ig, $bron) {
   $status = 'wacht'; $fout = '';
   if ($a['test'] && !in_array(strtolower($user), array_map('strtolower', $a['testers']), true)) { $status = 'overgeslagen'; $fout = jc_t('reden.testmodus'); }
   elseif ($ts < time() - JC_PRIVATE_REPLY_DAGEN * 86400) { $status = 'overgeslagen'; $fout = jc_t('reden.te_oud'); }
-  elseif (!$a['test'] && ($c['from_id'] ?? '') !== '') {
+  elseif (!$a['test'] && ($c['from_id'] ?? '') !== '' && !in_array(strtolower($user), array_map('strtolower', $a['testers']), true)) {
+    // Accounts in de testlijst mogen altijd opnieuw testen; alle anderen hooguit één keer per etmaal.
     // Wie twee keer hetzelfde woord typt, krijgt niet twee keer hetzelfde bericht.
     $s = $db->prepare("SELECT 1 FROM reacties WHERE automation_id=? AND ig_user_id=? AND dm_status IN ('verstuurd','wacht','bezig') AND ts > ? LIMIT 1");
     $s->execute([$a['id'], (string)$c['from_id'], time() - JC_ZELFDE_PERSOON_UREN * 3600]);
