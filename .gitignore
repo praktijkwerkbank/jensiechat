@@ -1,0 +1,17 @@
+# Nooit in de repository: instellingen met sleutels, de database, logs en de voortgang van een installatie.
+config.php
+jensiechat-config.php
+voortgang.md
+progress.md
+code/jensiechat/data/*
+!code/jensiechat/data/.htaccess
+jensiechat-data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.lock
+*.log
+.env
+.DS_Store
+*.zip
