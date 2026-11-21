@@ -16,7 +16,7 @@
 // Bewaard: gebruikersnaam en -ID, reactie, post, tijd, verstuurd, geklikt. Na 90 dagen worden naam, ID en tekst gewist; de cijfers blijven.
 if (!defined('JC_APP')) { http_response_code(404); exit; }
 
-const JC_VERSIE = '1.1.0';
+const JC_VERSIE = '1.2.0';
 const JC_BEWAAR_DAGEN = 90;          // daarna naam, ID en tekst wissen
 const JC_ZELFDE_PERSOON_UREN = 24;   // dezelfde persoon krijgt hetzelfde bericht hooguit een keer per etmaal
 const JC_PRIVATE_REPLY_DAGEN = 7;    // Meta: een privébericht op een reactie kan tot 7 dagen na de reactie
@@ -62,6 +62,59 @@ if ($JC_CONFIG_PAD === '') {
   elseif ($JC_CONFIG_FOUT === '') $JC_C = $x;
 }
 function jc_cfg($k, $def = '') { global $JC_C; $v = $JC_C[$k] ?? $def; return is_string($v) ? trim($v) : $v; }
+/**
+ * Het instellingenbestand schrijven (sinds 1.2, voor het invulscherm en de Meta-sleutels in het dashboard).
+ * Met var_export, dus aanhalingstekens, backslashes en ?> in een waarde kunnen de PHP-code niet breken.
+ * Eerst naar een tijdelijk bestand (alleen voor de eigenaar leesbaar), dan in een keer op zijn plek, zodat er nooit een half bestand staat.
+ * $alleenNieuw: alleen aanmaken als er nog geen bestand is (het invulscherm); twee gelijktijdige verzoeken kunnen dan niet allebei winnen.
+ * Geeft '' of een foutsleutel.
+ */
+function jc_config_schrijf(array $c, $pad, $alleenNieuw = false) {
+  foreach ($c as $k => $v) if (is_string($v)) {
+    // Per byte opschonen (zonder /u): werkt ook bij een waarde die geen geldige UTF-8 is, en raakt geen letters met accenten.
+    $schoon = preg_replace('/[\x00-\x1F\x7F]/', '', $v);
+    if ($schoon === null) return 'in.niet_schrijfbaar';
+    $c[$k] = trim($schoon);
+  }
+  $inhoud = "<?php\n// Jensiechat " . JC_VERSIE . ", instellingen. Gemaakt of bijgewerkt op " . date('Y-m-d H:i') . " via het invulscherm of het dashboard.\n"
+    . "// Uitleg per instelling: config.voorbeeld.php. Je mag dit bestand ook zelf bewerken in de bestandsbeheerder.\n"
+    . "return " . var_export($c, true) . ";\n";
+  $map = dirname($pad);
+  if (!is_dir($map) || !is_writable($map) || (is_file($pad) && !is_writable($pad))) return 'in.niet_schrijfbaar';
+  $slot = @fopen($map . '/.jc-config.lock', 'c'); if ($slot) flock($slot, LOCK_EX);
+  $klaar = function ($fout) use ($slot) { if ($slot) { flock($slot, LOCK_UN); fclose($slot); } return $fout; };
+  if ($alleenNieuw && is_file($pad)) return $klaar('in.al_bestand');
+  $tmp = $map . '/.jc-config-' . bin2hex(random_bytes(8)) . '.tmp';
+  $oud = umask(0027); $ok = @file_put_contents($tmp, $inhoud, LOCK_EX); umask($oud);
+  if ($ok === false) return $klaar('in.niet_schrijfbaar');
+  @chmod($tmp, 0640);
+  $test = (static function ($p) { try { return include $p; } catch (Throwable $e) { return null; } })($tmp);
+  if (!is_array($test) || $test != $c) { @unlink($tmp); return $klaar('in.niet_schrijfbaar'); }
+  if ($alleenNieuw) {
+    // link() mislukt als het bestand intussen al bestaat; kan de host geen link maken, dan nog een laatste controle en rename.
+    if (@link($tmp, $pad)) { @unlink($tmp); }
+    elseif (is_file($pad)) { @unlink($tmp); return $klaar('in.al_bestand'); }
+    elseif (!@rename($tmp, $pad)) { @unlink($tmp); return $klaar('in.niet_schrijfbaar'); }
+  } elseif (!@rename($tmp, $pad)) { @unlink($tmp); return $klaar('in.niet_schrijfbaar'); }
+  if (function_exists('opcache_invalidate')) @opcache_invalidate($pad, true);
+  return $klaar('');
+}
+/** Bevat het instellingenbestand alleen vaste waarden (tekst, getallen, true/false)? Dan mag het dashboard het herschrijven. */
+function jc_config_alleen_waarden($pad) {
+  $mag = [T_OPEN_TAG, T_RETURN, T_ARRAY, T_CONSTANT_ENCAPSED_STRING, T_LNUMBER, T_DNUMBER, T_DOUBLE_ARROW, T_WHITESPACE, T_COMMENT, T_DOC_COMMENT, T_CLOSE_TAG];
+  foreach (token_get_all((string)@file_get_contents($pad)) as $t) {
+    if (is_string($t)) { if (strpos('[](),;-', $t) === false) return false; continue; }
+    if (in_array($t[0], $mag, true)) continue;
+    if ($t[0] === T_STRING && in_array(strtolower($t[1]), ['true', 'false', 'null'], true)) continue;
+    return false;
+  }
+  return true;
+}
+/** Waar het invulscherm het instellingenbestand neerzet: liefst een map boven de webmap, anders in deze map. */
+function jc_config_doel() {
+  if (jc_webroot() !== '') { $p = dirname(jc_webroot()) . '/jensiechat-config.php'; if (is_writable(dirname($p))) return $p; }
+  return __DIR__ . '/config.php';
+}
 /** De taal van het dashboard en de standaardteksten: 'nl' (standaard), 'en' of 'es' (sinds 1.1), uit config.php. */
 function jc_taal() { $t = strtolower((string)jc_cfg('taal', 'nl')); return in_array($t, ['nl', 'en', 'es'], true) ? $t : 'nl'; }
 /** Een tekst uit taal/<taal>.json. {naam} wordt vervangen door $v['naam']. Ontbreekt de tekst, dan de Nederlandse. */
@@ -756,6 +809,8 @@ function jc_gezondheid() {
   return [
     'versie' => JC_VERSIE,
     'token' => $JC_TOKEN !== '', 'geheim' => $JC_APP_SECRET !== '', 'verify' => $JC_VERIFY !== '',
+    'app_id' => $GLOBALS['JC_APP_ID'] !== '', 'ig_ingevuld' => $GLOBALS['JC_IG_ID'] !== '',
+    'config_schrijfbaar' => $JC_CONFIG_PAD !== '' && is_writable($JC_CONFIG_PAD) && is_writable(dirname($JC_CONFIG_PAD)),
     'token_ok' => (int)jc_get('token_ok', 0), 'token_fout' => (string)jc_get('token_fout', ''), 'token_check_ts' => (int)jc_get('token_check_ts', 0),
     'token_verloopt' => (int)jc_get('token_verloopt', 0), 'token_rechten' => (string)jc_get('token_rechten', ''),
     'ig_id' => jc_ig_id_bekend(), 'ig_username' => (string)jc_get('ig_username', ''), 'volgers' => (string)jc_get('volgers', ''),
@@ -815,4 +870,10 @@ function jc_klaar_met_antwoord() {
 }
 
 // ── Klopt de instelling? Anders hier stoppen, met een duidelijke melding. ────
-if ($JC_CONFIG_FOUT !== '' && JC_APP !== 'thema') jc_stop($JC_CONFIG_FOUT);
+// Nog helemaal niets ingesteld en het invulscherm staat er: het dashboard stuurt daarheen (sinds 1.2).
+/** Staat er al een database van Jensiechat (op een van de twee standaardplekken)? Dan is dit geen nieuwe installatie. */
+function jc_db_bestaat() { foreach ([jc_webroot() !== '' ? dirname(jc_webroot()) . '/jensiechat-data' : '', __DIR__ . '/data'] as $m) if ($m !== '' && is_file($m . '/jensiechat.db')) return true; return false; }
+if (JC_APP === 'html' && $JC_CONFIG_PAD === '' && !jc_db_bestaat() && is_file(__DIR__ . '/instellen.php')) { header('Location: instellen.php', true, 302); exit; }
+// Is alles ingesteld, dan mag een achtergebleven instellen.aan weg: anders blijft het invulscherm openzetbaar.
+if (JC_APP === 'html' && $JC_CONFIG_PAD !== '' && is_file(__DIR__ . '/instellen.aan')) @unlink(__DIR__ . '/instellen.aan');
+if ($JC_CONFIG_FOUT !== '' && JC_APP !== 'thema' && JC_APP !== 'instellen') jc_stop($JC_CONFIG_FOUT);

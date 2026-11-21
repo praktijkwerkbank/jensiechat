@@ -45,9 +45,9 @@ Lista completa: [referentie/es/requisitos.md](referentie/es/requisitos.md).
 1. Crea una carpeta (por ejemplo `public_html/chat`) o un subdominio con HTTPS.
 2. Sube el contenido de `code/jensiechat/`, incluidos los archivos ocultos `.htaccess`.
 3. Abre `https://<address>/keuring.php` y arregla todo lo que esté en rojo.
-4. Copia `config.voorbeeld.php` como `jensiechat-config.php` una carpeta por encima de tu carpeta web (o como `config.php` en la carpeta) y rellena `adres`, `dashboard_wachtwoord` (12 caracteres o más), `taal` (`es`, `en` o `nl`), `naam` y `kleur`.
+4. Abre la dirección de la carpeta. La pantalla de configuración te pide el idioma, un nombre, un color y una contraseña para el panel, y crea el archivo de ajustes por ti (está abierta 24 horas después de subir los archivos). Si prefieres hacerlo a mano: copia `config.voorbeeld.php` como `jensiechat-config.php` una carpeta por encima de tu carpeta web (o como `config.php` en la carpeta) y rellena `adres`, `dashboard_wachtwoord` (12 caracteres o más), `taal` (`es`, `en` o `nl`), `naam` y `kleur`.
 5. Crea la app en Meta (tipo Business, Instagram con inicio de sesión de Facebook), un usuario del sistema con acceso a la app, a la página y a la cuenta de Instagram, y un token con `instagram_basic`, `instagram_manage_comments` y `instagram_manage_messages`. Activa "Allow access to messages" en la app de Instagram.
-6. Pon `meta_app_id`, `meta_app_geheim`, `meta_token` y un `webhook_controlewoord` en el archivo de configuración. Abre el panel, Estado, Comprobar ahora.
+6. En el panel, Estado, "Conexión con Meta": pega el token de acceso, el ID de la app y el secreto de la app, y pulsa Guardar y comprobar. (O pon tú `meta_token`, `meta_app_id` y `meta_app_geheim` en el archivo de ajustes.)
 7. Crea un cron job que se ejecute cada minuto con el comando que aparece en Estado.
 8. Opcional: el webhook en Meta con la dirección de Estado y el `webhook_controlewoord` (verify token) de tu archivo de configuración, suscrito a `comments`.
 9. Crea tu primera regla en modo de prueba, pruébala desde tu segunda cuenta y luego desactiva el modo de prueba.

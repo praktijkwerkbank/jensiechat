@@ -92,6 +92,33 @@ switch ($a) {
     $dm = jc_dm_tekst($o, 'voorbeld', 'jouwnaam'); $kn = jc_knoppen($o, 'voorbeld');
     uit(['ok' => true, 'match' => ['knoppen' => array_map(fn($k) => ['title' => $k['title'], 'url' => $k['url']], $kn), 'id' => $o['id'], 'naam' => $o['naam'], 'aan' => $o['aan'], 'test' => $o['test'], 'dm' => $dm, 'bytes' => strlen($dm), 'antwoorden' => $o['antwoorden']]]);
 
+  case 'sleutels': // Sinds 1.2: de sleutels van Meta in het instellingenbestand zetten. Alleen achter het wachtwoord; de waarden gaan nooit terug.
+    $vorm = ['meta_token' => '/^[A-Za-z0-9_\-|.]{20,600}$/', 'meta_app_id' => '/^\d{5,25}$/', 'meta_app_geheim' => '/^[A-Za-z0-9]{16,64}$/', 'instagram_id' => '/^\d{5,25}$/'];
+    $nieuw = [];
+    foreach ($vorm as $k => $re) {
+      $v = is_string($in[$k] ?? null) ? trim($in[$k]) : '';
+      if ($v === '') continue;
+      if (!preg_match($re, $v)) uit(['ok' => false, 'fout' => jc_t('mk.fout_teken'), 'veld' => $k]);
+      $nieuw[$k] = $v;
+    }
+    if (!$nieuw) uit(['ok' => false, 'fout' => jc_t('mk.niets')]);
+    // Vult de browser per ongeluk het dashboardwachtwoord in het tokenveld in, dan dat niet als token bewaren.
+    foreach ($nieuw as $k => $v) if (hash_equals((string)$JC_DASH_KEY, $v)) uit(['ok' => false, 'fout' => jc_t('mk.fout_teken'), 'veld' => $k]);
+    // Een handgemaakt bestand met code (zoals getenv() of __DIR__) herschrijven zou die code vervangen door vaste waarden: dan niet.
+    if (!jc_config_alleen_waarden($JC_CONFIG_PAD)) uit(['ok' => false, 'fout' => jc_t('mk.handwerk')]);
+    $c = (static function ($p) { $x = include $p; return is_array($x) ? $x : null; })($JC_CONFIG_PAD);
+    if (!is_array($c)) uit(['ok' => false, 'fout' => jc_t('mk.niet_schrijfbaar')]);
+    if (jc_config_schrijf(array_merge($c, $nieuw), $JC_CONFIG_PAD) !== '') uit(['ok' => false, 'fout' => jc_t('mk.niet_schrijfbaar')]);
+    // Voor de rest van dit verzoek de nieuwe waarden gebruiken, zodat de controle hieronder meteen met het nieuwe token werkt.
+    $JC_C = array_merge($c, $nieuw); $GLOBALS['JC_C'] = $JC_C;
+    if (isset($nieuw['meta_token'])) { $JC_TOKEN = $nieuw['meta_token']; jc_set('token_check_ts', 0); }
+    if (isset($nieuw['meta_app_id'])) $JC_APP_ID = $nieuw['meta_app_id'];
+    if (isset($nieuw['meta_app_geheim'])) $JC_APP_SECRET = $nieuw['meta_app_geheim'];
+    if (isset($nieuw['instagram_id'])) $JC_IG_ID = $nieuw['instagram_id'];
+    jc_log('wijziging', jc_t('log.sleutels_bewaard', ['velden' => implode(', ', array_keys($nieuw))]));
+    if (isset($nieuw['meta_token'])) jc_token_check(true);
+    uit(['ok' => true] + staat($in));
+
   case 'controle_nu':
     jc_token_check(true); $n = jc_controle(false); $v = jc_wachtrij(5, time() + 20);
     uit(['ok' => true, 'nieuw' => $n, 'verstuurd' => $v] + staat($in));

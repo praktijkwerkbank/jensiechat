@@ -3,7 +3,8 @@
 // De accentkleur uit config.php als CSS, en het tabbladicoon (?icoon=1). Werkt ook zonder config (dan de standaardkleur).
 define('JC_APP', 'thema');
 require __DIR__ . '/lib.php';
-$hex = jc_kleur(); $rgb = [hexdec(substr($hex, 1, 2)), hexdec(substr($hex, 3, 2)), hexdec(substr($hex, 5, 2))];
+// ?k=rrggbb: een voorbeeldkleur, voor het invulscherm (sinds 1.2). Alleen CSS, dus zonder risico.
+$hex = (is_string($_GET['k'] ?? null) && preg_match('/^[0-9a-fA-F]{6}$/', $_GET['k'])) ? '#' . strtolower($_GET['k']) : jc_kleur(); $rgb = [hexdec(substr($hex, 1, 2)), hexdec(substr($hex, 3, 2)), hexdec(substr($hex, 5, 2))];
 function th_lum($c) { $c = array_map(function ($v) { $v /= 255; return $v <= 0.03928 ? $v / 12.92 : pow(($v + 0.055) / 1.055, 2.4); }, $c); return 0.2126 * $c[0] + 0.7152 * $c[1] + 0.0722 * $c[2]; }
 function th_contrast($a, $b) { $x = th_lum($a); $y = th_lum($b); return (max($x, $y) + 0.05) / (min($x, $y) + 0.05); }
 function th_donker($c, $f) { return array_map(fn($v) => (int)round($v * (1 - $f)), $c); }

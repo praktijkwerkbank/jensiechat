@@ -133,6 +133,17 @@ $t = fn($k) => $h(jc_t($k));
       <button class="knop knop-tweede" type="button" id="nu-controleren"><?= $t('h.nu_controleren') ?></button>
     </div>
     <ul class="glas checks" id="checks"></ul>
+    <form class="glas mk" id="mk-form" autocomplete="off" novalidate>
+      <div class="kaart-kop"><h2><?= $t('mk.kop') ?></h2></div>
+      <p class="uitleg"><?= $t('mk.uitleg') ?></p>
+      <div class="mk-velden">
+        <label class="veldje"><span><?= $t('mk.token') ?> <i class="mk-stand" data-mk="meta_token"></i></span><input name="meta_token" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore spellcheck="false" inputmode="text"></label>
+        <label class="veldje"><span><?= $t('mk.app_id') ?> <i class="mk-stand" data-mk="meta_app_id"></i></span><input name="meta_app_id" type="text" autocomplete="off" spellcheck="false" inputmode="numeric"></label>
+        <label class="veldje"><span><?= $t('mk.geheim') ?> <i class="mk-stand" data-mk="meta_app_geheim"></i></span><input name="meta_app_geheim" type="password" autocomplete="new-password" data-lpignore="true" data-1p-ignore spellcheck="false" inputmode="text"></label>
+        <label class="veldje"><span><?= $t('mk.ig') ?> <i class="mk-stand" data-mk="instagram_id"></i></span><input name="instagram_id" type="text" autocomplete="off" spellcheck="false" inputmode="numeric"><small><?= $t('mk.ig_uitleg') ?></small></label>
+      </div>
+      <div class="mk-acties"><p class="melding" id="mk-uit" role="status"></p><button class="knop knop-hoofd" type="submit"><span><?= $t('mk.bewaar') ?></span><i class="pijl" aria-hidden="true"></i></button></div>
+    </form>
     <div class="twee">
       <div class="glas">
         <div class="kaart-kop"><h2><?= $t('h.logboek') ?></h2></div>

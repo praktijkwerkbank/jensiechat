@@ -22,7 +22,7 @@ Daarna `benodigdheden.md`, punt voor punt, een vraag per bericht. Ontbreekt iets
 
 ## Fase 1: keuzes
 
-Een voor een: de naam van het Instagram-account; het adres van de website; waar Jensiechat komt (een map `jouwpraktijk.nl/chat` of een subdomein `chat.jouwpraktijk.nl`); de taal (`nl` of `en`); een naam voor het dashboard (geen "Insta", "IG", "Facebook" of "Meta" erin) en een accentkleur (de hoofdkleur van de site werkt meestal).
+Een voor een: de naam van het Instagram-account; het adres van de website; waar Jensiechat komt (een map `jouwpraktijk.nl/chat` of een subdomein `chat.jouwpraktijk.nl`); de taal (`nl`, `en` of `es`); een naam voor het dashboard (geen "Insta", "IG", "Facebook" of "Meta" erin) en een accentkleur (de hoofdkleur van de site werkt meestal).
 
 - **Wat er nu werkt:** de keuzes liggen vast.
 - **Zo zie je het zelf:** ze staan in `voortgang.md`.
@@ -33,13 +33,26 @@ Een voor een: de naam van het Instagram-account; het adres van de website; waar 
 1. **Map of subdomein.** De gebruiker maakt in het paneel van de host een map in de webmap (vaak `public_html/chat`) of een subdomein. Bij een subdomein: in het paneel ook het (gratis) certificaat aanzetten; dat kan tot een uur duren.
 2. **Uploaden.** De inhoud van `code/jensiechat/` in die map zetten. Het makkelijkst: de map als zip uploaden in de bestandsbeheerder en daar uitpakken. Controle: in de map staan `index.php`, `lib.php`, `keuring.php` en de mappen `r`, `taal` en `data`. Verborgen bestanden (`.htaccess`) moeten mee; in sommige bestandsbeheerders staat "verborgen bestanden tonen" uit.
 3. **Keuring.** Open `https://<adres>/keuring.php`. Elk punt is groen, oranje of rood, met wat je doet. Rood eerst oplossen. Belangrijkst: "Afscherming met .htaccess" en "Map voor de gegevens"; de database mag nooit via internet op te halen zijn.
-4. **config.php.** In de bestandsbeheerder `config.voorbeeld.php` kopiëren. Veiligst: de kopie `jensiechat-config.php` noemen en een map boven de webmap zetten (naast `public_html`, niet erin). Anders: `config.php` in de map van Jensiechat. Nu alleen invullen: `adres`, `dashboard_wachtwoord` (minstens 12 tekens, uit de wachtwoordmanager), `taal`, `naam`, `kleur`. De Meta-velden blijven leeg.
+4. **Het invulscherm.** Open `https://<adres>/`. Zolang er geen instellingenbestand is, stuurt het dashboard je door naar het invulscherm `instellen.php`. Daar doet de gebruiker dit:
+   - bovenaan de taal kiezen (Nederlands, English of Español);
+   - de naam van de chat invullen;
+   - een kleur kiezen: een van de zes rondjes, of "Eigen kleur";
+   - het adres van de map controleren (meestal klopt het al);
+   - een dashboardwachtwoord kiezen van minstens 12 tekens. De knop "Maak er een voor me" maakt een sterk wachtwoord; zet het meteen in je wachtwoordmanager. Met "Toon" zie je wat er staat.
+
+   Dan op **Instellen** drukken. Het scherm schrijft zelf het instellingenbestand: liefst een map boven de webmap als `jensiechat-config.php` (naast `public_html`, niet erin), anders als `config.php` in de map van Jensiechat. Het maakt ook zelf een `webhook_controlewoord` en neemt de tijdzone van de browser over. Daarna staat er "Klaar. Je chat is ingesteld." met de knop "Open je dashboard". Vanaf dan gaat het invulscherm voorgoed dicht. De sleutels van Meta komen hier niet; die volgen in fase 4.
+
+   Claude mag helpen met de naam, de kleur en het adres, ook in de browser. Bij de wachtwoordvelden stopt Claude met de browser: die vult de gebruiker zelf in, en Claude vraagt niet naar het wachtwoord.
+   - **"Dit scherm staat dicht":** het invulscherm werkt alleen in de eerste 24 uur na het uploaden. Maak in de bestandsbeheerder een leeg bestand `instellen.aan` in de map van Jensiechat en laad de pagina opnieuw.
+   - **"Je host laat Jensiechat hier geen bestand schrijven...":** druk op "Download config.php" en zet dat bestand als `config.php` in de map van Jensiechat, via de bestandsbeheerder.
+   - **Liever met de hand (de oude manier):** in de bestandsbeheerder `config.voorbeeld.php` kopiëren. Veiligst: de kopie `jensiechat-config.php` noemen en een map boven de webmap zetten. Anders: `config.php` in de map van Jensiechat. Invullen: `adres`, `dashboard_wachtwoord` (minstens 12 tekens, uit de wachtwoordmanager), `taal`, `naam`, `kleur` en een zelfbedacht `webhook_controlewoord` (bijvoorbeeld twintig willekeurige letters en cijfers uit de wachtwoordmanager). De Meta-velden blijven leeg. Het resultaat is hetzelfde.
 5. **Dashboard openen** op `https://<adres>/` en inloggen met het wachtwoord.
 
 **Waar het misgaat:**
 - Een witte pagina of "500": vaak een te oude PHP-versie. Kijk wat de keuring zegt.
-- "Er zit een tikfout in config.php rond regel ...": een aanhalingsteken of komma vergeten. Elke regel ziet eruit als `'naam' => 'tekst',`.
-- "Het adres moet met https:// beginnen": in `adres` staat `http://` of niets.
+- "Dit scherm staat dicht", "Je host laat Jensiechat hier geen bestand schrijven..." of "Jensiechat is al ingesteld" terwijl de gebruiker het scherm niet zelf invulde: zie `als-je-dit-ziet.md`.
+- "Het adres moet met https:// beginnen": in het invulscherm of in `adres` staat `http://` of niets.
+- Alleen bij de handmatige manier: "Er zit een tikfout in config.php rond regel ...": een aanhalingsteken of komma vergeten. Elke regel ziet eruit als `'naam' => 'tekst',`.
 
 - **Wat er nu werkt:** het dashboard staat op je eigen site, achter je wachtwoord.
 - **Zo zie je het zelf:** onder Gezondheid staat "Token: nog geen token ingevuld" (rood, dat klopt nu) en "Plek van je gegevens" groen of oranje.
@@ -97,16 +110,20 @@ In de Instagram-app op je telefoon, ingelogd als je praktijkaccount: Instellinge
 Plakt iemand een token, app-geheim of wachtwoord in de chat of op een schermafbeelding, dan geldt die als gelekt:
 - **token:** maak bij de systeemgebruiker een nieuw token en trek het oude in (bij de systeemgebruiker, tokens beheren of intrekken);
 - **app-geheim:** App-instellingen, Basis, het geheim opnieuw instellen ("Reset");
-- **dashboardwachtwoord:** kies een nieuw in `config.php`.
-Zet het nieuwe in `config.php`.
+- **dashboardwachtwoord:** kies een nieuw en zet het in het instellingenbestand (`jensiechat-config.php` een map boven de webmap, of `config.php` in de map van Jensiechat), via de bestandsbeheerder.
+
+Een nieuw token of app-geheim plakt de gebruiker in het dashboard onder Gezondheid, kaart "Koppeling met Meta". Alleen het nieuwe veld invullen: een leeg veld houdt de huidige waarde.
 
 - **Wat er nu werkt:** de app bestaat en je hebt een token, app-ID en app-geheim, zonder dat ze in de chat stonden.
 - **Zo zie je het zelf:** bij Systeemgebruikers zie je je systeemgebruiker met de app, de pagina en het Instagram-account eronder; in je wachtwoordmanager staan de drie waarden.
-- **Volgende stap:** de sleutels in `config.php` en de cronjob (fase 4).
+- **Volgende stap:** de sleutels in het dashboard en de cronjob (fase 4).
 
-## Fase 4: sleutels in config.php en de cronjob
+## Fase 4: sleutels in het dashboard en de cronjob
 
-1. In de bestandsbeheerder `config.php` openen en invullen: `meta_app_id`, `meta_app_geheim`, `meta_token`, en een zelfbedacht `webhook_controlewoord` (bijvoorbeeld twintig willekeurige letters en cijfers uit de wachtwoordmanager). Opslaan.
+1. **Koppeling met Meta.** Dashboard, Gezondheid, kaart "Koppeling met Meta". De gebruiker plakt zelf vanuit de wachtwoordmanager: "Toegangstoken" (het token van de systeemgebruiker), "App-ID" en "App-geheim". "Instagram-ID" mag leeg blijven; Jensiechat zoekt het zelf op met het token. Dan **Bewaren en controleren**. De waarden komen in het instellingenbestand op de eigen server en worden nooit meer getoond: per veld staat alleen "ingevuld" of "nog leeg". Niet in de chat plakken. Claude gebruikt de browser niet op deze kaart; de gebruiker zegt wanneer het klaar is.
+   - "Er staat een spatie of vreemd teken in een sleutel. Kopieer hem nog een keer.": de sleutel opnieuw kopiëren uit de wachtwoordmanager, zonder spatie of regeleinde ervoor of erachter.
+   - "Je host laat Jensiechat het instellingenbestand niet aanpassen...": dan zet de gebruiker de sleutels zelf in het instellingenbestand, via de bestandsbeheerder: `meta_token`, `meta_app_id` en `meta_app_geheim`, tussen de aanhalingstekens. Claude zegt welke regel het is; de gebruiker typt of plakt. Claude opent het bestand niet in de editor.
+   - Het `webhook_controlewoord` heeft het invulscherm al gemaakt. Wie het instellingenbestand met de hand maakte, heeft het in fase 2 zelf bedacht.
 2. Dashboard, Gezondheid, **Nu controleren**. "Token" en "Instagram-account" worden groen, met de naam van je account.
 3. Gezondheid laat bij "Eigen controle" de opdracht voor de cronjob zien. In het paneel van de host een cronjob maken die **elke minuut** draait, met die opdracht. Heet PHP bij de host anders (bijvoorbeeld een pad met een versienummer), dan het pad van de host gebruiken.
 4. Na twee minuten: Gezondheid opnieuw laden.
@@ -119,7 +136,7 @@ Zet het nieuwe in `config.php`.
 
 ## Fase 5: webhook (naar keuze)
 
-In de app bij Meta: Instagram, Webhooks (soms onder de use case). De callback-URL staat in Gezondheid bij "Meldingen van Meta (webhook)". Het controlewoord (bij Meta: Verify token) is het `webhook_controlewoord` uit `config.php`; Gezondheid laat het niet zien. Abonneren op `comments`. Daarna in Gezondheid **Meldingen aanzetten**.
+In de app bij Meta: Instagram, Webhooks (soms onder de use case). De callback-URL staat in Gezondheid bij "Meldingen van Meta (webhook)". Het controlewoord (bij Meta: Verify token) is het `webhook_controlewoord` uit het instellingenbestand; Gezondheid laat het niet zien. De gebruiker kopieert het zelf uit het bestand in de bestandsbeheerder; Claude gebruikt daar de browser niet. Abonneren op `comments`. Daarna in Gezondheid **Meldingen aanzetten**.
 
 Eerlijk zeggen: zonder App Review stuurt Meta meldingen over reacties meestal alleen voor accounts met een rol op de app. "Nog geen melding ontvangen" is dus normaal. De cronjob doet het werk; met de webhook komt een reactie van een tester soms sneller binnen.
 
@@ -155,8 +172,8 @@ Claude vult `code/privacy/privacy-tekst.nl.md` in met de gegevens van de praktij
 
 ## Fase 8: klaar en onderhoud
 
-Meegeven: eens per week naar Gezondheid kijken; als iets stilvalt, worden reacties jonger dan 7 dagen alsnog beantwoord zodra het weer werkt; eens per jaar de privacytekst nalopen en het dashboardwachtwoord vervangen. In `voortgang.md` noteren dat de installatie klaar is.
+Meegeven: eens per week naar Gezondheid kijken; als iets stilvalt, worden reacties jonger dan 7 dagen alsnog beantwoord zodra het weer werkt; eens per jaar de privacytekst nalopen en het dashboardwachtwoord vervangen (in het instellingenbestand, via de bestandsbeheerder). In `voortgang.md` noteren dat de installatie klaar is.
 
-Bijwerken: nieuwe code over de oude map heen uploaden. `config.php` en de datamap blijven staan. Nooit `config.php` overschrijven met `config.voorbeeld.php`.
+Bijwerken: nieuwe code over de oude map heen uploaden. Het instellingenbestand en de datamap blijven staan. Nooit het instellingenbestand overschrijven met `config.voorbeeld.php`.
 
-Stoppen: automations uit, cronjob weg, de map en de datamap wissen, de app bij Meta verwijderen, privacytekst aanpassen.
+Stoppen: automations uit, cronjob weg, de map en de datamap wissen, ook het instellingenbestand wissen (kijk ook een map boven de webmap, `jensiechat-config.php`), de app bij Meta verwijderen, privacytekst aanpassen.

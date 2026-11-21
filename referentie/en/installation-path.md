@@ -35,13 +35,26 @@ One at a time: the Instagram account name; the website address; where Jensiechat
 1. **Folder or subdomain.** The user creates a folder in the web folder (often `public_html/chat`) or a subdomain in the host's control panel. For a subdomain: also switch on the (free) certificate; this can take up to an hour.
 2. **Upload.** Put the contents of `code/jensiechat/` in that folder. Easiest: upload the folder as a zip in the file manager and extract it there. Check: the folder contains `index.php`, `lib.php`, `keuring.php` and the folders `r`, `taal` and `data`. Hidden files (`.htaccess`) must come along; some file managers hide them.
 3. **Hosting check.** Open `https://<address>/keuring.php`. Each item is green, orange or red, with what to do. Fix red first. Most important: "Protection with .htaccess" and "Folder for the data"; the database must never be downloadable over the internet.
-4. **config.php.** In the file manager, copy `config.voorbeeld.php`. Safest: name the copy `jensiechat-config.php` and put it one folder above the web folder (next to `public_html`, not inside it). Otherwise: `config.php` in the Jensiechat folder. Only fill in now: `adres` (the web address of the folder), `dashboard_wachtwoord` (dashboard password, at least 12 characters, from the password manager), `taal`, `naam`, `kleur`. The Meta fields stay empty.
+4. **The setup screen.** Open `https://<address>/`. As long as there is no settings file, the dashboard sends you to the setup screen `instellen.php`. There the user does this:
+   - pick the language at the top (Nederlands, English or Español);
+   - fill in the name of the chat;
+   - pick a colour: one of the six circles, or "Own colour";
+   - check the address of the folder (usually it is already right);
+   - choose a dashboard password of at least 12 characters. The button "Make one for me" makes a strong password; put it in your password manager right away. "Show" lets you see what is there.
+
+   Then press **Set up**. The screen writes the settings file itself: preferably one folder above the web folder as `jensiechat-config.php` (next to `public_html`, not inside it), otherwise as `config.php` in the Jensiechat folder. It also makes a `webhook_controlewoord` (webhook verify word) by itself and takes over the time zone of the browser. Then it says "Done. Your chat is set up." with the button "Open your dashboard". From then on the setup screen is closed for good. The keys from Meta do not go here; they follow in phase 4.
+
+   Claude may help with the name, the colour and the address, also in the browser. At the password fields Claude stops using the browser: the user fills them in alone, and Claude does not ask for the password.
+   - **"This screen is closed":** the setup screen only works in the first 24 hours after uploading. In the file manager, create an empty file `instellen.aan` in the Jensiechat folder and reload the page.
+   - **"Your host does not let Jensiechat write a file here...":** press "Download config.php" and put that file in the Jensiechat folder as `config.php`, using the file manager.
+   - **By hand instead (the old way):** in the file manager, copy `config.voorbeeld.php`. Safest: name the copy `jensiechat-config.php` and put it one folder above the web folder. Otherwise: `config.php` in the Jensiechat folder. Fill in: `adres` (the web address of the folder), `dashboard_wachtwoord` (dashboard password, at least 12 characters, from the password manager), `taal`, `naam`, `kleur` and a self-made `webhook_controlewoord` (for example twenty random letters and digits from the password manager). The Meta fields stay empty. The result is the same.
 5. **Open the dashboard** at `https://<address>/` and log in with the password.
 
 **What goes wrong:**
 - A white page or "500": often a PHP version that is too old. See what the hosting check says.
-- "There is a typo in config.php around line ...": a missing quote or comma. Every line looks like `'naam' => 'text',`.
-- "The adres must start with https://": `adres` contains `http://` or nothing.
+- "This screen is closed", "Your host does not let Jensiechat write a file here..." or "Jensiechat is already set up" while the user did not fill in the screen: see `if-you-see-this.md`.
+- "The address must start with https://": the setup screen or `adres` contains `http://` or nothing.
+- Only with the manual way: "There is a typo in config.php around line ...": a missing quote or comma. Every line looks like `'naam' => 'text',`.
 
 - **What works now:** the dashboard is on your own site, behind your password.
 - **How you can see it yourself:** under Health, "Token: no token filled in yet" (red, which is correct now) and "Where your data is stored" green or orange.
@@ -99,16 +112,20 @@ In the Instagram app on your phone, logged in as your practice account: Settings
 If someone pastes a token, app secret or password in the chat or shows it on a screenshot, treat it as leaked:
 - **token:** create a new token for the system user and revoke the old one (at the system user, manage or revoke tokens);
 - **app secret:** App settings, Basic, reset the secret;
-- **dashboard password:** choose a new one in `config.php`.
-Put the new one in `config.php`.
+- **dashboard password:** choose a new one and put it in the settings file (`jensiechat-config.php` one folder above the web folder, or `config.php` in the Jensiechat folder), using the file manager.
+
+The user pastes a new token or app secret in the dashboard under Health, card "Connection with Meta". Only fill in the new field: an empty field keeps the current value.
 
 - **What works now:** the app exists and you have a token, app ID and app secret, without them appearing in the chat.
 - **How you can see it yourself:** under System users you see your system user with the app, the Page and the Instagram account; your password manager holds the three values.
-- **Next step:** the keys into `config.php` and the cron job (phase 4).
+- **Next step:** the keys into the dashboard and the cron job (phase 4).
 
-## Phase 4: keys into config.php and the cron job
+## Phase 4: keys into the dashboard and the cron job
 
-1. Open `config.php` in the file manager and fill in: `meta_app_id`, `meta_app_geheim` (app secret), `meta_token`, and a self-made `webhook_controlewoord` (webhook verify word, for example twenty random letters and digits from the password manager). Save.
+1. **Connection with Meta.** Dashboard, Health, card "Connection with Meta". The user pastes from the password manager themselves: "Access token" (the system user's token), "App ID" and "App secret". "Instagram ID" can stay empty; Jensiechat looks it up with the token. Then **Save and check**. The values go into the settings file on the user's own server and are never shown again: each field only says "filled in" or "still empty". Do not paste them in the chat. Claude does not use the browser on this card; the user says when it is done.
+   - "A key contains a space or an odd character. Copy it again.": copy the key again from the password manager, without a space or line break before or after it.
+   - "Your host does not let Jensiechat change the settings file...": then the user puts the keys into the settings file themselves, using the file manager: `meta_token`, `meta_app_id` and `meta_app_geheim` (app secret), between the quotes. Claude says which line it is; the user types or pastes. Claude does not open the file in the editor.
+   - The setup screen already made the `webhook_controlewoord`. Whoever made the settings file by hand made one up in phase 2.
 2. Dashboard, Health, **Check now**. "Token" and "Instagram account" turn green, with your account name.
 3. Health shows the command for the cron job at "Own check". In the host's control panel, create a cron job that runs **every minute** with that command. If PHP has another path at the host (for example a path with a version number), use the host's path.
 4. After two minutes: reload Health.
@@ -121,7 +138,7 @@ Put the new one in `config.php`.
 
 ## Phase 5: webhook (optional)
 
-In the app at Meta: Instagram, Webhooks (sometimes under the use case). The callback URL is shown in Health at "Notifications from Meta (webhook)". The verify word (at Meta: Verify token) is the `webhook_controlewoord` from `config.php`; Health does not show it. Subscribe to `comments`. Then press **Switch on notifications** in Health.
+In the app at Meta: Instagram, Webhooks (sometimes under the use case). The callback URL is shown in Health at "Notifications from Meta (webhook)". The verify word (at Meta: Verify token) is the `webhook_controlewoord` from the settings file; Health does not show it. The user copies it from the file in the file manager, alone; Claude does not use the browser there. Subscribe to `comments`. Then press **Switch on notifications** in Health.
 
 Say honestly: without App Review, Meta usually only sends comment notifications for accounts with a role on the app. "No notification received yet" is normal. The cron job does the work; with the webhook, a comment from a tester sometimes arrives faster.
 
@@ -157,8 +174,8 @@ Claude fills in `code/privacy/privacy-text.en.md` with the practice's details. T
 
 ## Phase 8: done and maintenance
 
-Pass on: look at Health once a week; if something stops, comments younger than 7 days are still answered once it works again; once a year review the privacy text and replace the dashboard password. Note in `voortgang.md` that the installation is done.
+Pass on: look at Health once a week; if something stops, comments younger than 7 days are still answered once it works again; once a year review the privacy text and replace the dashboard password (in the settings file, using the file manager). Note in `voortgang.md` that the installation is done.
 
-Updating: upload the new code over the old folder. `config.php` and the data folder stay. Never overwrite `config.php` with `config.voorbeeld.php`.
+Updating: upload the new code over the old folder. The settings file and the data folder stay. Never overwrite the settings file with `config.voorbeeld.php`.
 
-Stopping: automations off, cron job removed, the folder and the data folder deleted, the app removed at Meta, privacy text updated.
+Stopping: automations off, cron job removed, the folder and the data folder deleted, the settings file deleted too (also look one folder above the web folder, `jensiechat-config.php`), the app removed at Meta, privacy text updated.

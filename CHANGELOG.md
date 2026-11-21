@@ -2,6 +2,15 @@
 
 All notable changes to Jensiechat are listed here. The version number lives in one place in the code (`JC_VERSIE` in `code/jensiechat/lib.php`) and in the metadata of `SKILL.md`.
 
+## 1.2.0 (2026-11-21)
+
+- Setup screen: open the address of your Jensiechat folder and a short form asks for the language, a name, a colour and a dashboard password, then writes the settings file for you. No more editing `config.php` by hand (that still works too). For safety the screen only opens while nothing is set up yet and only in the first 24 hours after uploading (an empty file `instellen.aan` opens it again), and it closes for good after saving. Fill it in right after uploading. The dashboard password uses plain characters only (é or € do not work in the login), and "Make one for me" makes a strong one.
+- The keys from Meta go into the dashboard: Health, "Connection with Meta". They are saved in the settings file on your own server and never shown again. A settings file you wrote by hand with code in it (such as `getenv()`) is left alone; then you add the keys yourself. The open setup screen never asks for them.
+- Every automation now shows its flow: a block for the comment with the keyword, the private message with its buttons, the public reply and the clicks, joined by lines. Click a block to edit that part. On a phone the blocks stack.
+- If the settings file goes missing while the data is still there (for example after moving hosts), the setup screen stays closed and says what to put back, instead of starting over.
+- Note for hosts where PHP runs as a different user than your account (rare; not Hostinger or cPanel): the settings file is written readable for the web server only. If the cron job then cannot read it, make the settings file by hand instead (copy `config.voorbeeld.php`), or ask your host.
+- Fixed: the first letter of the name in the logo showed as small grey text, and the logo was hidden on a phone.
+
 ## 1.1.0 (2026-11-21)
 
 - Spanish: the dashboard, the hosting check, the privacy text template, the README and the installation guides are now also in Spanish (set `taal` to `es` in `config.php`). Missing Spanish texts fall back to English. The Spanish was made with AI help and has not yet been reviewed by a native speaker.

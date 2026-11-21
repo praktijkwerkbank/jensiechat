@@ -45,9 +45,9 @@ Volledige lijst: [referentie/nl/benodigdheden.md](referentie/nl/benodigdheden.md
 1. Maak een map (bijvoorbeeld `public_html/chat`) of een subdomein met HTTPS.
 2. Upload de inhoud van `code/jensiechat/`, ook de verborgen `.htaccess`-bestanden.
 3. Open `https://<adres>/keuring.php` en los alles op wat rood is.
-4. Kopieer `config.voorbeeld.php` naar `jensiechat-config.php` een map boven je webmap (of naar `config.php` in de map) en vul `adres`, `dashboard_wachtwoord` (12+ tekens), `taal` (`nl` of `en`), `naam` en `kleur` in.
+4. Open het adres van de map. Het invulscherm vraagt de taal, een naam, een kleur en een dashboardwachtwoord, en maakt het instellingenbestand voor je (het staat 24 uur na het uploaden open). Liever met de hand: kopieer `config.voorbeeld.php` naar `jensiechat-config.php` een map boven je webmap (of naar `config.php` in de map) en vul `adres`, `dashboard_wachtwoord` (12+ tekens), `taal` (`nl`, `en` of `es`), `naam` en `kleur` in.
 5. Maak de app bij Meta (type Bedrijf, Instagram met Facebook-login), een systeemgebruiker met toegang tot de app, de pagina en het Instagram-account, en een token met `instagram_basic`, `instagram_manage_comments` en `instagram_manage_messages`. Zet in de Instagram-app "Toegang tot berichten toestaan" aan.
-6. Zet `meta_app_id`, `meta_app_geheim`, `meta_token` en een `webhook_controlewoord` in het instellingenbestand. Open het dashboard, Gezondheid, Nu controleren.
+6. In het dashboard, Gezondheid, "Koppeling met Meta": plak het toegangstoken, de app-ID en het app-geheim en druk op Bewaren en controleren. (Of zet `meta_token`, `meta_app_id` en `meta_app_geheim` zelf in het instellingenbestand.)
 7. Maak een cronjob die elke minuut draait, met de opdracht uit Gezondheid.
 8. Naar keuze: de webhook bij Meta met het adres uit Gezondheid en het `webhook_controlewoord` uit je instellingenbestand, geabonneerd op `comments`.
 9. Maak je eerste automation in testmodus, test hem vanaf je tweede account, en zet de testmodus daarna uit.

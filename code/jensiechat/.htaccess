@@ -2,7 +2,8 @@
 RewriteEngine On
 RewriteRule ^(lib|config|config\.voorbeeld)\.php$ - [F,L]
 RewriteRule ^data(/|$) - [F,L]
-RewriteRule \.(db|db-wal|db-shm|lock|sqlite|md)$ - [F,L]
+RewriteRule \.(db|db-wal|db-shm|lock|sqlite|md|tmp|aan)$ - [F,L]
+RewriteRule (^|/)\.jc- - [F,L]
 Options -Indexes
 DirectoryIndex index.php
 <IfModule mod_headers.c>

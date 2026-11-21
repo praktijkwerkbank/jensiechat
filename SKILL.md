@@ -4,7 +4,7 @@ description: "Self-hosted Instagram comment-to-DM: a keyword under a post gets a
 license: MIT
 metadata:
   author: Jens Kemna, Praktijkwerkbank (praktijkwerkbank.nl)
-  version: "1.1.0 (basic version)"
+  version: "1.2.0 (basic version)"
   tested: "Locally against a simulated Meta API (November 2026). The underlying code runs live on the maker's own hosting."
 ---
 
@@ -20,7 +20,8 @@ Someone comments under an Instagram post or reel with a word the user chose (for
 - sends that person a private message (Meta's "private reply") with up to two buttons that open a link. If Meta refuses buttons, the same text goes out with the links written below it;
 - posts a short public reply under the comment, picked from a few options so it is never the same twice in a row;
 - counts clicks through its own short links (no IP address, no cookies, link previews by robots are not counted);
-- shows everything in a dashboard: Overview, Automations (editor with live preview and "try a comment"), Activity, People (with labels) and Health (status, log, and "erase someone's data").
+- shows everything in a dashboard: Overview, Automations (each with its flow drawn as blocks and lines, an editor with live preview, and "try a comment"), Activity, People (with labels) and Health (status, the connection with Meta, log, and "erase someone's data");
+- sets itself up through a setup screen, so the user never has to edit a code file.
 
 It runs on the user's own web hosting. A scheduled task (cron job) checks for new comments every 15 to 60 seconds; this is the main route, because without Meta's App Review, Meta only sends comment notifications (webhooks) for accounts that have a role on the app. The webhook is supported as an extra. Jensiechat slows down on Meta's reported usage, queues and retries, sends one message per person per automation per 24 hours, and anonymises data after 90 days. No App Review is needed.
 
@@ -50,7 +51,7 @@ Say honestly, before starting:
 
 ## Hard rules
 
-1. **Never ask for, and never accept, a password, token, app secret, API key or verification code in the chat.** Keys go into `config.php` on the user's own server, typed by the user in the host's file manager. If a user pastes one anyway: say that this key must now be treated as leaked, tell them to create a new one and revoke the old one, and explain where (installation path, phase 3, "If a key leaks").
+1. **Never ask for, and never accept, a password, token, app secret, API key or verification code in the chat.** Keys go onto the user's own server, typed by the user: in the dashboard under Health, "Connection with Meta" (since 1.2), or in `config.php` in the host's file manager. If a user pastes one anyway: say that this key must now be treated as leaked, tell them to create a new one and revoke the old one, and explain where (installation path, phase 3, "If a key leaks").
 2. **The user logs in and verifies themselves.** Logging in, passwords, two-factor codes, identity checks, business verification, accepting terms or policies, and creating or copying tokens and app secrets are always done by the user. If a browser tool is available, Claude may help in the browser only as described in "Help in the browser" below. Never click through a login or identity check.
 3. **Nothing goes live without a clear yes**: uploading, switching an automation on, turning test mode off.
 4. **One question at a time**, in plain language. Explain a technical word the first time it appears ("scheduled task, your host calls this a cron job").
@@ -75,7 +76,7 @@ Claude never, also not in the browser:
 - presses the final button of a step that cannot be undone (create app, publish, delete, submit) without the user saying yes to that specific step; preferably the user presses it;
 - creates the Meta developer account, or goes through any step with a box for terms or policies (this often comes up while creating the app): the user does those steps alone.
 
-**Stop before any screen that shows or creates a key.** Before the token window of a system user ("Generate token"), the app secret after "Show", or `config.php` opened in the file manager's editor: stop using the browser tool and take no screenshot. The user does that step alone and says when the key is no longer visible on screen. Then continue.
+**Stop before any screen that shows or creates a key or password.** Before the token window of a system user ("Generate token"), the app secret after "Show", the password fields of the setup screen (`instellen.php`), the "Connection with Meta" card in Health, or `config.php` opened in the file manager's editor: stop using the browser tool and take no screenshot. The user does that step alone and says when the key is no longer visible on screen. Then continue.
 
 Meta often asks automated browsers for an extra identity check, and shows screens differently per account and country. Then stop, let the user handle it in their own browser, and continue by describing the screens. Never try to get around a check. If the browser tool is not available or the user prefers it, describe each screen as before; the installation works the same.
 
@@ -110,7 +111,12 @@ Ask, one at a time: the Instagram account name; the website address; where Jensi
 1. The user creates the folder or subdomain in the host's panel and makes sure HTTPS works on it.
 2. The user uploads the contents of `code/jensiechat/` into that folder (zip upload and extract in the file manager is easiest; the folder must contain `index.php`, `lib.php` and the folders `r/`, `taal/` and `data/`).
 3. The user opens `https://<address>/keuring.php` and reads out (or screenshots) the result. Fix every red item first; each item says how. The data folder check matters most: the database must never be reachable over the internet.
-4. The user copies `config.voorbeeld.php` to `config.php` (safer: to `jensiechat-config.php` one folder above the web folder, next to `public_html`) and fills in only: `adres`, `dashboard_wachtwoord` (at least 12 characters, from the password manager), `taal`, `naam`, `kleur`. Meta fields stay empty for now.
+4. The user opens `https://<address>/` (the dashboard sends them to the setup screen `instellen.php` while nothing is set up). On that screen they pick the language, fill in the name of the chat, pick a colour, check the address and choose a dashboard password (at least 12 characters; the button "Make one for me" makes a strong one, which goes straight into their password manager). Claude may help with the name, colour and address, also in the browser, but the user fills in the password fields alone. The screen writes the settings file itself (one folder above the web folder when the host allows it, otherwise `config.php` here) and then closes for good. No keys from Meta go here.
+   - Do this **right after uploading**: until the form is saved, anyone who finds the address could fill it in. If the screen says "already set up" and the user did not do it: delete the settings file (`jensiechat-config.php` one folder above the web folder, or `config.php` in the Jensiechat folder) and the database `jensiechat.db` (in `jensiechat-data` next to the web folder, or in `data/`) in the file manager, then fill in the screen at once (an existing database also keeps the screen closed).
+   - The password uses only letters without accents, digits and plain punctuation (é, € or spaces do not work when logging in); "Make one for me" always gives a good one.
+   - If the screen says it is closed: it only opens in the first 24 hours after uploading. The user creates an empty file `instellen.aan` in the Jensiechat folder and reloads.
+   - If the host cannot write the file: the screen offers `config.php` as a download; the user uploads it into the Jensiechat folder.
+   - Prefer the old way, or no setup screen wanted: copy `config.voorbeeld.php` to `config.php` and fill in `adres`, `dashboard_wachtwoord`, `taal`, `naam`, `kleur` in the file manager. Both ways give the same result.
 5. The user opens the dashboard and logs in.
 
 Done when: the dashboard opens and Health shows "Token: no token filled in yet" and "Where your data is stored" is green or amber (not red).
@@ -118,15 +124,15 @@ Done when: the dashboard opens and Health shows "Token: no token filled in yet" 
 ### Phase 3. The app at Meta (45 to 90 minutes, the hardest part)
 Follow `installatiepad` phase 3 screen by screen: prerequisites (professional public account, Page connected, business portfolio holding both, two-factor on); developer account; app of type Business linked to the portfolio; product Instagram with the Facebook login setup (Unified login); a system user with access to the app, the Page and the Instagram account; a token with `instagram_basic`, `instagram_manage_comments` and `instagram_manage_messages`; the app ID and app secret; and in the Instagram app on the phone the switch that allows connected tools access to messages. Describe what each screen is for, ask for a screenshot when it looks different, and stop at each known stumbling block in the table.
 
-### Phase 4. Keys into config.php and the cron job (15 minutes)
-1. The user fills in `meta_app_id`, `meta_app_geheim`, `meta_token` and a self-made `webhook_controlewoord` in `config.php`, in the file manager. Not in the chat.
+### Phase 4. Keys and the cron job (15 minutes)
+1. In the dashboard, under Health, "Connection with Meta": the user pastes the access token, the app ID and the app secret (the Instagram ID can stay empty). The values go into the settings file on their own server and are never shown again; the card only says "filled in". Not in the chat, and Claude does not use the browser on this card. The setup screen already made a `webhook_controlewoord`; for a hand-made `config.php` the user makes one up. If the card says the host does not allow changes to the settings file, the user puts the keys into the file in the file manager instead.
 2. In Health, the user presses "Check now". Token and Instagram account must turn green and show the right account name.
 3. Health shows the exact cron command. The user creates a scheduled task that runs every minute with that command.
 
 Done when: Token, Instagram account and Own check are green.
 
 ### Phase 5. Webhook (optional, 10 minutes)
-In the Meta app, Instagram, Webhooks: the callback URL is shown in Health, the verify token is the `webhook_controlewoord` the user put in `config.php` (Health does not show it); subscribe to `comments`. Then "Switch on notifications" in Health. Say clearly: without App Review, notifications usually only arrive for accounts with a role on the app, so "no notification yet" is normal. The cron job does the work.
+In the Meta app, Instagram, Webhooks: the callback URL is shown in Health, the verify token is the `webhook_controlewoord` from the settings file (Health does not show it; the user copies it from the file in the file manager, alone); subscribe to `comments`. Then "Switch on notifications" in Health. Say clearly: without App Review, notifications usually only arrive for accounts with a role on the app, so "no notification yet" is normal. The cron job does the work.
 
 ### Phase 6. First automation, in test mode (20 minutes)
 Ask, one at a time: the keyword; the link; which post (one post, all posts, or "the next post I publish"). Propose in the user's tone of voice: the message (above buttons at most 610 characters; without buttons at most 1000 bytes), the button text (at most 20 characters), and three public replies. Use "Try a comment" in the dashboard to show the result. Save with **On** and **Test mode** on, with their second account in the test list. The user comments the keyword from the second account and checks: the private message arrives (within about a minute), the public reply appears, and a tap on the button shows up as "Clicked" under Activity. Then, after a clear yes: test mode off.
@@ -159,6 +165,6 @@ Details with sources: `referentie/nl/meta-feiten.md` / `referentie/en/meta-facts
 |---|---|
 | `SKILL.md` | These instructions |
 | `README.md`, `README.nl.md`, `README.es.md`, `LICENSE`, `CHANGELOG.md`, `SECURITY.md` | For people and GitHub; MIT licence, versions, how to report a security problem |
-| `code/jensiechat/` | The program to upload (PHP, JS, CSS, `.htaccess`, `config.voorbeeld.php`, `keuring.php`, short links in `r/`, texts in `taal/nl.json`, `taal/en.json` and `taal/es.json`) |
+| `code/jensiechat/` | The program to upload (PHP, JS, CSS, `.htaccess`, `config.voorbeeld.php`, `keuring.php`, the setup screen `instellen.php`, short links in `r/`, texts in `taal/nl.json`, `taal/en.json` and `taal/es.json`) |
 | `code/privacy/` | Privacy text templates, Dutch, English and Spanish |
 | `referentie/nl/`, `referentie/en/`, `referentie/es/` | Requirements, installation path (with the Meta screens in phase 3), "if you see this, do this", Meta facts, progress template |

@@ -45,9 +45,9 @@ Full list: [referentie/en/requirements.md](referentie/en/requirements.md).
 1. Create a folder (for example `public_html/chat`) or a subdomain with HTTPS.
 2. Upload the contents of `code/jensiechat/`, including the hidden `.htaccess` files.
 3. Open `https://<address>/keuring.php` and fix everything that is red.
-4. Copy `config.voorbeeld.php` to `jensiechat-config.php` one folder above your web folder (or to `config.php` in the folder) and fill in `adres`, `dashboard_wachtwoord` (12+ characters), `taal` (`en` or `nl`), `naam` and `kleur`.
+4. Open the address of the folder. The setup screen asks for the language, a name, a colour and a dashboard password, and writes the settings file for you (it is open for 24 hours after uploading). Prefer doing it by hand: copy `config.voorbeeld.php` to `jensiechat-config.php` one folder above your web folder (or to `config.php` in the folder) and fill in `adres`, `dashboard_wachtwoord` (12+ characters), `taal` (`nl`, `en` or `es`), `naam` and `kleur`.
 5. Create the app at Meta (Business type, Instagram with Facebook login), a system user with access to the app, the Page and the Instagram account, and a token with `instagram_basic`, `instagram_manage_comments` and `instagram_manage_messages`. Switch on "Allow access to messages" in the Instagram app.
-6. Put `meta_app_id`, `meta_app_geheim`, `meta_token` and a `webhook_controlewoord` in the config file. Open the dashboard, Health, Check now.
+6. In the dashboard, Health, "Connection with Meta": paste the access token, the app ID and the app secret, and press Save and check. (Or put `meta_token`, `meta_app_id` and `meta_app_geheim` in the settings file yourself.)
 7. Create a cron job that runs every minute with the command shown in Health.
 8. Optional: the webhook at Meta with the address from Health and the `webhook_controlewoord` (verify token) from your config file, subscribed to `comments`.
 9. Create your first automation in test mode, test it from your second account, then switch test mode off.

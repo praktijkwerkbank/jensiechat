@@ -205,12 +205,13 @@
         + '<label class="schakel" data-stop><input type="checkbox" data-wissel="' + a.id + '"' + (a.aan ? ' checked' : '') + ' aria-label="' + esc(T('au.aan_uit', { naam: a.naam })) + '"><span class="schuif" aria-hidden="true"></span></label>'
         + '<div><h3>' + esc(a.naam) + ' ' + lab + '</h3><div class="regel">' + a.trefwoorden.map(function (w) { return '<span class="chip">' + esc(w) + '</span>'; }).join('')
         + '<span>' + esc(T('au.bij')) + ' <b>' + esc(mediaNaam(a.media_id)) + '</b></span><span>r/' + esc(a.slug) + '</span></div></div>'
-        + '<div class="auto-cijfers"><div>' + c.reacties + '<small>' + esc(T('au.reacties')) + '</small></div><div>' + c.verstuurd + '<small>' + esc(T('au.verstuurd')) + '</small></div><div>' + (c.ratio == null ? '–' : c.ratio + '%') + '<small>' + esc(T('au.klikratio')) + '</small></div></div></article>';
+        + '<div class="auto-cijfers"><div>' + c.reacties + '<small>' + esc(T('au.reacties')) + '</small></div><div>' + c.verstuurd + '<small>' + esc(T('au.verstuurd')) + '</small></div><div>' + (c.ratio == null ? '–' : c.ratio + '%') + '<small>' + esc(T('au.klikratio')) + '</small></div></div>' + flowHtml(a) + '</article>';
     }).join('');
     el.querySelectorAll('.auto').forEach(function (k) {
-      k.addEventListener('click', function (e) { if (e.target.closest('[data-stop]')) return; openBlad(+k.dataset.id); });
+      k.addEventListener('click', function (e) { if (e.target.closest('[data-stop]')) return; var b = e.target.closest('[data-veld]'); openBlad(+k.dataset.id, b ? b.dataset.veld : ''); });
       k.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target === k) { e.preventDefault(); openBlad(+k.dataset.id); } });
     });
+    flLijnen(); if (flRo) { flRo.disconnect(); flRo.observe(el); } else window.addEventListener('resize', flLijnen);
     el.querySelectorAll('[data-wissel]').forEach(function (i) {
       i.addEventListener('change', function () {
         var aan = i.checked; i.disabled = true;
@@ -219,6 +220,58 @@
       });
     });
   }
+
+  // ── De flow van een automation (sinds 1.2): een plaatje van wat er gebeurt, in blokken met lijnen. Alleen weergave. ──
+  var FL_IK = {
+    start: '<svg viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/></svg>',
+    bericht: '<svg viewBox="0 0 24 24"><path d="M4 12.5c0-4.4 3.6-8 8-8s8 3.6 8 8-3.6 8-8 8c-1.3 0-2.6-.3-3.7-.9L4 20.5l1-4.1c-.6-1.2-1-2.5-1-3.9Z"/></svg>',
+    antwoord: '<svg viewBox="0 0 24 24"><path d="M20 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 12.5h5"/></svg>',
+    klik: '<svg viewBox="0 0 24 24"><path d="M9 4v9.5l-2.2-2a1.6 1.6 0 0 0-2.3 2.3L9.5 19a4 4 0 0 0 3 1.4H15a4 4 0 0 0 4-4v-4.6a1.5 1.5 0 0 0-3 0V11a1.5 1.5 0 0 0-3 0v-.6a1.5 1.5 0 0 0-3 0V4a1.5 1.5 0 0 0-3 0Z"/></svg>'
+  };
+  function flBlok(soort, veld, kop, binnen, dim) {
+    var tag = veld ? 'button type="button" data-veld="' + veld + '" title="' + esc(T('fl.open')) + '"' : 'div';
+    return '<' + tag + ' class="fl-blok fl-' + soort + (dim ? ' fl-dim' : '') + '" data-n="' + soort + '"><span class="fl-kop"><span class="fl-ik" aria-hidden="true">' + FL_IK[soort] + '</span>' + esc(kop) + '</span>' + binnen + '</' + tag.split(' ')[0] + '>';
+  }
+  function kort(t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1).replace(/\s\S*$/, '') + '…' : t; }
+  function flowHtml(a) {
+    var c = a.cijfers, knoppen = a.stijl === 'knop' ? [a.knop, a.knop2].filter(Boolean) : [], ant = a.antwoorden.filter(Boolean), link = !!(a.link || a.link2);
+    var start = flBlok('start', 'trefwoorden', T('fl.start'), '<span class="fl-woorden">' + a.trefwoorden.map(function (w) { return '<span class="chip">' + esc(w) + '</span>'; }).join('') + '</span><span class="fl-klein">' + esc(T('fl.op', { post: mediaNaam(a.media_id) })) + '</span>'
+      + (a.aan && a.test ? '<span class="label label-test">' + esc(T('au.testmodus')) + '</span>' : ''));
+    var bericht = flBlok('bericht', 'dm_tekst', T('fl.bericht'), '<span class="fl-tekst">' + esc(kort(a.dm_tekst, 120)) + '</span>'
+      + (knoppen.length ? '<span class="fl-knoppen">' + knoppen.map(function (k) { return '<span>' + esc(k) + '</span>'; }).join('') + '</span>' : '')
+      + '<span class="fl-klein">' + esc(T('fl.verstuurd', { n: c.verstuurd })) + '</span>');
+    var antwoord = flBlok('antwoord', 'antwoorden', T('fl.antwoord'), ant.length ? '<span class="fl-tekst">' + esc(kort(ant[0], 70)) + '</span>' + (ant.length > 1 ? '<span class="fl-klein">' + esc(T('fl.varianten', { n: ant.length })) + '</span>' : '') : '<span class="fl-klein">' + esc(T('fl.geen_antwoord')) + '</span>', !ant.length);
+    var klik = flBlok('klik', 'link', T('fl.klik'), link ? '<span class="fl-getal">' + (c.geklikt || 0) + '</span><span class="fl-klein">' + esc(T('fl.klikken')) + (c.ratio == null ? '' : ', ' + c.ratio + '%') + '</span>' : '<span class="fl-klein">' + esc(T('fl.geen_link')) + '</span>', !link);
+    return '<div class="flow" role="group" aria-label="' + esc(T('fl.label', { naam: a.naam })) + '"><svg class="fl-lijnen" aria-hidden="true"></svg>'
+      + '<div class="fl-kol">' + start + '</div><div class="fl-kol">' + bericht + antwoord + '</div><div class="fl-kol">' + klik + '</div></div>';
+  }
+  // De lijnen: na het tekenen meten waar de blokken staan. Naast elkaar een S-bocht, onder elkaar (telefoon) recht omlaag.
+  function flLijnen() {
+    document.querySelectorAll('.flow').forEach(function (f) {
+      var svg = f.querySelector('.fl-lijnen'), fr = f.getBoundingClientRect(), n = {};
+      f.querySelectorAll('[data-n]').forEach(function (b) { n[b.dataset.n] = b.getBoundingClientRect(); });
+      var dimVan = function (k) { var e = f.querySelector('[data-n="' + k + '"]'); return e && e.classList.contains('fl-dim') ? 'dim' : ''; };
+      if (n.start && n.bericht && n.bericht.left < n.start.right - 4) {
+        // Onder elkaar (telefoon): een ruggengraat links, met een korte pijl naar elk blok.
+        var sx = n.bericht.left - fr.left - 13, laatste = n.klik || n.antwoord, rug = 'M' + sx + ' ' + (n.start.bottom - fr.top) + ' V' + (laatste.top + 26 - fr.top);
+        var takken = ['bericht', 'antwoord', 'klik'].filter(function (k) { return n[k]; }).map(function (k) {
+          var y = n[k].top + 26 - fr.top; return '<path class="' + dimVan(k) + '" d="M' + sx + ' ' + y + ' H' + (n[k].left - fr.left - 5) + '" marker-end="url(#fl-pijl)"/>';
+        }).join('');
+        svg.innerHTML = '<defs><marker id="fl-pijl" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 9 5 1 9Z"/></marker></defs><path d="' + rug + '"/>' + takken;
+        return;
+      }
+      var paden = [['start', 'bericht'], ['start', 'antwoord'], ['bericht', 'klik']].map(function (p) {
+        var a = n[p[0]], b = n[p[1]], d, x1, y1, x2, y2;
+        if (!a || !b) return '';
+        if (b.left >= a.right - 4) { x1 = a.right - fr.left; y1 = a.top + a.height / 2 - fr.top; x2 = b.left - fr.left - 6; y2 = b.top + b.height / 2 - fr.top; var m = (x2 - x1) / 2; d = 'M' + x1 + ' ' + y1 + ' C' + (x1 + m) + ' ' + y1 + ' ' + (x2 - m) + ' ' + y2 + ' ' + x2 + ' ' + y2; }
+        else { x1 = a.left + 26 - fr.left; y1 = a.bottom - fr.top; x2 = b.left + 26 - fr.left; y2 = b.top - fr.top - 6; d = 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2; }
+        var dim = f.querySelector('[data-n="' + p[1] + '"]').classList.contains('fl-dim');
+        return '<path class="' + (dim ? 'dim' : '') + '" d="' + d + '" marker-end="url(#fl-pijl)"/>';
+      }).join('');
+      svg.innerHTML = '<defs><marker id="fl-pijl" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 9 5 1 9Z"/></marker></defs>' + paden;
+    });
+  }
+  var flRo = window.ResizeObserver ? new ResizeObserver(function () { flLijnen(); }) : null;
 
   // ── Mensen en labels ──
   var mensFilter = '', mensZoek = '', labelOpen = '';
@@ -307,9 +360,27 @@
       return '<li class="check" data-stand="' + c.s + '"><span class="check-stip" aria-hidden="true">' + ik + '</span><div><b>' + esc(c.t) + '</b><p>' + esc(c.p) + '</p>' + (c.code ? '<code>' + esc(c.code) + '</code>' : '') + '</div>' + knop + '</li>';
     }).join('');
     $('checks').querySelectorAll('[data-actie]').forEach(function (b) { b.addEventListener('click', function () { b.dataset.actie === 'webhook' ? webhookAan(b) : controleer(b); }); });
+    tekenSleutels();
     var log = S.gezondheid.logboek;
     $('logboek').innerHTML = log.length ? log.map(function (l) { return '<li class="s-' + esc(l.soort) + '"><time>' + tijd(l.ts) + '</time><span>' + esc(l.tekst) + '</span></li>'; }).join('') : '<li><span></span><span>' + esc(T('ge.log_leeg')) + '</span></li>';
   }
+  // Koppeling met Meta (sinds 1.2): alleen of een sleutel er staat, nooit de waarde zelf.
+  function tekenSleutels() {
+    var g = S.gezondheid, staat = { meta_token: g.token, meta_app_id: g.app_id, meta_app_geheim: g.geheim, instagram_id: g.ig_ingevuld };
+    document.querySelectorAll('[data-mk]').forEach(function (el) { var ja = !!staat[el.dataset.mk]; el.textContent = ja ? T('mk.ingevuld') : T('mk.leeg'); el.classList.toggle('ja', ja); });
+    var f = $('mk-form'); f.classList.toggle('mk-dicht', !g.config_schrijfbaar);
+    if (!g.config_schrijfbaar) $('mk-uit').textContent = T('mk.niet_schrijfbaar');
+  }
+  $('mk-form').addEventListener('submit', function (e) {
+    e.preventDefault(); var f = this, b = f.querySelector('button[type=submit]'), d = { a: 'sleutels', filter: filter };
+    ['meta_token', 'meta_app_id', 'meta_app_geheim', 'instagram_id'].forEach(function (k) { d[k] = f.elements[k].value.replace(/\s+/g, ''); });
+    b.disabled = true; $('mk-uit').textContent = T('ge.bezig');
+    api(d).then(function (j) {
+      b.disabled = false;
+      if (j.ok) { f.reset(); verwerk(j); $('mk-uit').textContent = T('mk.bewaard'); }
+      else { $('mk-uit').textContent = j.fout || ''; if (j.veld && f.elements[j.veld]) f.elements[j.veld].focus(); }
+    }).catch(function () { b.disabled = false; $('mk-uit').textContent = ''; });
+  });
   function controleer(b) {
     b.disabled = true; var oud = b.textContent; b.textContent = T('ge.bezig');
     api({ a: 'controle_nu', filter: filter }).then(function (j) { b.disabled = false; b.textContent = oud; verwerk(j, T('ge.gecontroleerd') + ' ' + (j.nieuw ? Tn('ge.nieuw', j.nieuw) : T('ge.niets_nieuws'))); });
@@ -345,7 +416,7 @@
     var inp = form.elements[veld]; if (inp && inp.setAttribute) inp.setAttribute('aria-invalid', tekst ? 'true' : 'false');
   }
   var VELDEN = ['naam', 'trefwoorden', 'dm_tekst', 'link', 'link2', 'slug', 'knop', 'knop2'];
-  function openBlad(id) {
+  function openBlad(id, veld) {
     var a = id ? S.automations.filter(function (x) { return x.id === id; })[0] : null;
     bewerk = a ? a.id : 0;
     $('blad-titel').textContent = a ? a.naam : T('bl.nieuw');
@@ -366,7 +437,13 @@
     tekenAntwoorden(a ? a.antwoorden : [T('bl.std_antwoord_1'), T('bl.std_antwoord_2'), T('bl.std_antwoord_3')]);
     $('slug-voor').textContent = S.korte_link.replace(/^https?:\/\//, '') + (S.mooie_links ? '/' : '/?s=');
     testersZicht(); voorbeeld();
-    blad.showModal(); setTimeout(function () { form.elements.naam.focus(); }, 30);
+    blad.showModal(); setTimeout(function () {
+      // Vanuit de flow: meteen naar het veld van dat blok.
+      var doel = veld === 'antwoorden' ? form.querySelector('#antwoorden input') : veld === 'trefwoorden' ? $('woord-in') : veld ? form.elements[veld] : null;
+      if (doel && doel.offsetParent === null && veld === 'link') doel = form.elements.dm_tekst;
+      (doel && doel.focus ? doel : form.elements.naam).focus();
+      if (doel && doel.scrollIntoView) doel.scrollIntoView({ block: 'center' });
+    }, 30);
   }
   function tekenWoorden() {
     var box = $('woorden'), inp = $('woord-in');
