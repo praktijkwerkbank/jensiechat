@@ -1,16 +1,16 @@
 ---
 name: jensiechat
-description: Self-hosted Instagram comment-to-DM: a keyword under a post gets a private reply with a link. Claude guides the full setup step by step. Free basic version by Jens Kemna. (English & Nederlands)
+description: "Self-hosted Instagram comment-to-DM: a keyword under a post gets a private reply with a link. Claude guides the full setup step by step, and can help in the browser at Meta. Free basic version by Jens Kemna. (English, Nederlands, Español)"
 license: MIT
 metadata:
   author: Jens Kemna, Praktijkwerkbank (praktijkwerkbank.nl)
-  version: "1.0.2 (basic version)"
+  version: "1.1.0 (basic version)"
   tested: "Locally against a simulated Meta API (November 2026). The underlying code runs live on the maker's own hosting."
 ---
 
 # Jensiechat (basic version)
 
-> **Hard rule, before anything else: always talk to the user in their own language.** Dutch or English. If unsure, use Dutch. These instructions are in English, but everything you say, write in `voortgang.md` and propose as message text follows the user's language. Reference files exist in both languages: `referentie/nl/` and `referentie/en/`.
+> **Hard rule, before anything else: always talk to the user in their own language.** Dutch, English or Spanish. If unsure, ask once which one they prefer. These instructions are in English, but everything you say, write in `voortgang.md` and propose as message text follows the user's language. Reference files exist in three languages: `referentie/nl/`, `referentie/en/` and `referentie/es/`. The dashboard can be in `nl`, `en` or `es` (setting `taal` in `config.php`).
 
 Made by Jens Kemna, coach and maker of Praktijkwerkbank (praktijkwerkbank.nl). MIT licence: free to use, share and change, as long as the copyright line stays. Jensiechat is not a product of ManyChat or Meta and contains no ManyChat code or design. It uses Meta's official Instagram API, for the user's own account. Source: github.com/praktijkwerkbank/jensiechat.
 
@@ -39,7 +39,7 @@ Go through this list with the user **as a checklist, one question at a time**, a
 7. **A second Instagram account of your own**, to test with. Never test on followers.
 8. **A password manager** (or another safe place) for the token, the app secret and the dashboard password.
 9. **Two to three hours**, which may be split over several days.
-10. **This skill running in Claude** (the Claude app or Claude Code). The user does the logging in and clicking in their own browser; Claude explains each screen.
+10. **This skill running in Claude** (the Claude app or Claude Code). Optional but helpful: a browser tool for Claude (for example Claude in Chrome or the browser in the Claude desktop app), so Claude can open the right pages and fill in the plain fields with the user watching. Without it, Claude describes each screen and the user clicks.
 
 Say honestly, before starting:
 - Hosting is required. If they have a WordPress site on normal hosting, they usually have it already. Never promise "no server needed".
@@ -51,18 +51,39 @@ Say honestly, before starting:
 ## Hard rules
 
 1. **Never ask for, and never accept, a password, token, app secret, API key or verification code in the chat.** Keys go into `config.php` on the user's own server, typed by the user in the host's file manager. If a user pastes one anyway: say that this key must now be treated as leaked, tell them to create a new one and revoke the old one, and explain where (installation path, phase 3, "If a key leaks").
-2. **The user logs in and verifies themselves, in their own browser.** Do not click through login screens or identity checks of Meta, the host or anything else. Meta often blocks unfamiliar browsers with an identity check.
+2. **The user logs in and verifies themselves.** Logging in, passwords, two-factor codes, identity checks, business verification, accepting terms or policies, and creating or copying tokens and app secrets are always done by the user. If a browser tool is available, Claude may help in the browser only as described in "Help in the browser" below. Never click through a login or identity check.
 3. **Nothing goes live without a clear yes**: uploading, switching an automation on, turning test mode off.
 4. **One question at a time**, in plain language. Explain a technical word the first time it appears ("scheduled task, your host calls this a cron job").
 5. **Ask for a screenshot when a screen looks different** from what you described, and always add: "Make sure no token, secret or password is visible on it."
 6. **Never write keys into any file in the project folder**, not even `voortgang.md`.
 7. **Never message followers to test.** Testing is done in test mode with the user's own second account.
-8. **Do not promise anything about Meta that is not stated in `referentie/*/meta-*.md`.** Say what is uncertain.
+8. **Do not promise anything about Meta that is not stated in `referentie/nl/meta-feiten.md`, `referentie/en/meta-facts.md` or `referentie/es/datos-de-meta.md`.** Say what is uncertain.
 9. **Do not buy anything or sign up for anything** on the user's behalf.
+
+## Help in the browser (optional, recommended for non-technical users)
+
+Many users are not technical. If Claude has a browser tool in this conversation (for example Claude in Chrome, the browser pane of the Claude desktop app, or computer use), offer this at the start of phase 2 and phase 3: "I can open the right pages in the browser and fill in the plain fields while you watch. You log in yourself and you click the important buttons." Use it only after a clear yes, and only for this user's own accounts.
+
+Claude may, after the user has logged in themselves:
+- open the right page (the host's file manager or cron job page, Meta for Developers, the app's Instagram settings), read the screen and say what is there;
+- fill in **non-sensitive** fields with values the user agreed to in the chat: app name, the privacy page address, the dashboard address, the webhook callback URL (from Health), the keyword and texts of an automation;
+- point to the next button and explain what it does.
+
+Claude never, also not in the browser:
+- types or reads out passwords, two-factor codes, tokens, app secrets, the `webhook_controlewoord` or the dashboard password, and never copies them into the chat or a file;
+- ticks consent boxes, accepts terms, policies or "I confirm" statements on behalf of the user or their business, starts business verification or App Review, or pays for anything;
+- presses the final button of a step that cannot be undone (create app, publish, delete, submit) without the user saying yes to that specific step; preferably the user presses it;
+- creates the Meta developer account, or goes through any step with a box for terms or policies (this often comes up while creating the app): the user does those steps alone.
+
+**Stop before any screen that shows or creates a key.** Before the token window of a system user ("Generate token"), the app secret after "Show", or `config.php` opened in the file manager's editor: stop using the browser tool and take no screenshot. The user does that step alone and says when the key is no longer visible on screen. Then continue.
+
+Meta often asks automated browsers for an extra identity check, and shows screens differently per account and country. Then stop, let the user handle it in their own browser, and continue by describing the screens. Never try to get around a check. If the browser tool is not available or the user prefers it, describe each screen as before; the installation works the same.
+
+When the user has to put keys into `config.php`: guide them to the file manager themselves, tell them exactly which line to change and what goes between the quotes, and let them type or paste the key there. Claude may open the file manager page, but stops before the file is opened in the editor and does not type the key.
 
 ## Keeping track: voortgang.md
 
-Keep a file `voortgang.md` in the user's project folder (template: `referentie/nl/voortgang-sjabloon.md` or `referentie/en/progress-template.md`). After every phase, record: which phase is done, the choices made (account name, website address, folder, language, dashboard name), and what comes next. **No keys, ever.**
+Keep a file `voortgang.md` in the user's project folder (template: `referentie/nl/voortgang-sjabloon.md`, `referentie/en/progress-template.md` or `referentie/es/plantilla-progreso.md`). After every phase, record: which phase is done, the choices made (account name, website address, folder, language, dashboard name), and what comes next. **No keys, ever.**
 
 When a user comes back (days later, or "where were we?"): read `voortgang.md` first, then say in two or three sentences where they were, what already works, and what the next step is. Ask before continuing.
 
@@ -77,13 +98,13 @@ Then update `voortgang.md` and ask whether this is a good moment to continue or 
 
 ## The installation path
 
-The detailed script per phase (what to say, what the user does, what goes wrong, when a phase is done) is in `referentie/nl/installatiepad.md` and `referentie/en/installation-path.md`. Read it before phase 2. The table "If you see this, do this" (`referentie/nl/als-je-dit-ziet.md`, `referentie/en/if-you-see-this.md`) covers the known problems. The core:
+The detailed script per phase (what to say, what the user does, what goes wrong, when a phase is done) is in `referentie/nl/installatiepad.md`, `referentie/en/installation-path.md` and `referentie/es/ruta-de-instalacion.md`. Read it before phase 2. The table "If you see this, do this" (`referentie/nl/als-je-dit-ziet.md`, `referentie/en/if-you-see-this.md`, `referentie/es/si-ves-esto.md`) covers the known problems. The core:
 
 ### Phase 0. Welcome and requirements (15 minutes)
-Explain in a few sentences what Jensiechat does and what it asks (the honest points above). Then walk the requirements list, one question at a time. Help with anything missing before going on. Create `voortgang.md`.
+Explain in a few sentences what Jensiechat does and what it asks (the honest points above). Ask how comfortable the user is with technical steps ("Have you ever uploaded files to your hosting or made a cron job?"). If not: go slower, one small step per message, explain every new word, check after each step that it worked, and offer the help in the browser (see above). Plan it in two sittings if needed: phase 0 to 2 first, Meta (phase 3 onward) another day. Then walk the requirements list, one question at a time. Help with anything missing before going on. Create `voortgang.md`.
 
 ### Phase 1. Choices (5 minutes)
-Ask, one at a time: the Instagram account name; the website address; where Jensiechat will live (a folder such as `yourpractice.com/chat` or a subdomain such as `chat.yourpractice.com`); the dashboard language (`nl` or `en`); a name for the dashboard and an accent colour (the main colour of their website is a good default). Avoid "Insta", "IG", "Facebook" or "Meta" in names.
+Ask, one at a time: the Instagram account name; the website address; where Jensiechat will live (a folder such as `yourpractice.com/chat` or a subdomain such as `chat.yourpractice.com`); the dashboard language (`nl`, `en` or `es`); a name for the dashboard and an accent colour (the main colour of their website is a good default). Avoid "Insta", "IG", "Facebook" or "Meta" in names.
 
 ### Phase 2. Hosting check and upload (20 to 40 minutes)
 1. The user creates the folder or subdomain in the host's panel and makes sure HTTPS works on it.
@@ -113,7 +134,7 @@ Ask, one at a time: the keyword; the link; which post (one post, all posts, or "
 Advice to give: say in the post what people get and which word to comment; no "follow me first" requirement; keep replying personally too; if another tool (such as ManyChat) also answers comments on the same post, switch that one off first, because Meta allows only one private reply per comment.
 
 ### Phase 7. Privacy (15 minutes)
-Fill in the template `code/privacy/privacy-tekst.nl.md` or `code/privacy/privacy-text.en.md` with the user's details. The user reads it, adjusts it and adds it to their privacy page. Point to "Erase someone's data" in Health for deletion requests, and to the data processing agreement with their host. Say that this is not legal advice.
+Fill in the template `code/privacy/privacy-tekst.nl.md`, `code/privacy/privacy-text.en.md` or `code/privacy/privacy-texto.es.md` with the user's details. The user reads it, adjusts it and adds it to their privacy page. Point to "Erase someone's data" in Health for deletion requests, and to the data processing agreement with their host. Say that this is not legal advice.
 
 ### Phase 8. Done and maintenance
 Give these points: look at Health once a week (green is good); if something stops, comments younger than 7 days are still answered once it works again; once a year review the privacy text and change the dashboard password. Mark the installation as finished in `voortgang.md`.
@@ -126,7 +147,7 @@ Give these points: look at Health once a week (green is good); if something stop
 
 ## What Meta allows (short)
 
-Details with sources: `referentie/nl/meta-feiten.md` / `referentie/en/meta-facts.md`.
+Details with sources: `referentie/nl/meta-feiten.md` / `referentie/en/meta-facts.md` / `referentie/es/datos-de-meta.md`.
 - One private reply per comment, up to 7 days after the comment.
 - Message text above buttons at most 640 characters, button text at most 20, message without buttons at most 1000 bytes.
 - Without App Review, about 200 API calls per hour for the app. When it is busy, people wait in the queue; nothing is lost within the 7 days.
@@ -137,7 +158,7 @@ Details with sources: `referentie/nl/meta-feiten.md` / `referentie/en/meta-facts
 | Path | What |
 |---|---|
 | `SKILL.md` | These instructions |
-| `README.md`, `README.nl.md`, `LICENSE`, `CHANGELOG.md`, `SECURITY.md` | For people and GitHub; MIT licence, versions, how to report a security problem |
-| `code/jensiechat/` | The program to upload (PHP, JS, CSS, `.htaccess`, `config.voorbeeld.php`, `keuring.php`, short links in `r/`, texts in `taal/nl.json` and `taal/en.json`) |
-| `code/privacy/` | Privacy text templates, Dutch and English |
-| `referentie/nl/`, `referentie/en/` | Requirements, installation path (with the Meta screens in phase 3), "if you see this, do this", Meta facts, progress template |
+| `README.md`, `README.nl.md`, `README.es.md`, `LICENSE`, `CHANGELOG.md`, `SECURITY.md` | For people and GitHub; MIT licence, versions, how to report a security problem |
+| `code/jensiechat/` | The program to upload (PHP, JS, CSS, `.htaccess`, `config.voorbeeld.php`, `keuring.php`, short links in `r/`, texts in `taal/nl.json`, `taal/en.json` and `taal/es.json`) |
+| `code/privacy/` | Privacy text templates, Dutch, English and Spanish |
+| `referentie/nl/`, `referentie/en/`, `referentie/es/` | Requirements, installation path (with the Meta screens in phase 3), "if you see this, do this", Meta facts, progress template |

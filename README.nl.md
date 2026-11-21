@@ -1,6 +1,6 @@
 # Jensiechat (basisversie)
 
-[English: README.md](README.md)
+[English: README.md](README.md), [Español: README.es.md](README.es.md)
 
 Je eigen automatische antwoord voor Instagram, op je eigen webhosting, zonder abonnement. Iemand reageert onder je post of reel met een woord dat jij kiest (bijvoorbeeld GIDS), en Jensiechat stuurt die persoon een privébericht met een knop naar je link, zet een kort antwoord onder de reactie en telt de kliks. In een dashboard zie je wat er gebeurde en of alles werkt.
 

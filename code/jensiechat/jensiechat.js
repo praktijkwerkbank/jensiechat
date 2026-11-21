@@ -458,9 +458,11 @@
   $('nieuw').addEventListener('click', function () { delete form.elements.slug.dataset.zelf; openBlad(0); });
 
   // ── Start: eerst de teksten, dan de gegevens ──
-  var taal = document.documentElement.lang === 'en' ? 'en' : 'nl';
-  fetch('taal/' + taal + '.json?v=' + encodeURIComponent(document.documentElement.dataset.versie || ''), { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return {}; }).then(function (t) {
-    L = t || {}; LOC = L._locale || LOC; nl = new Intl.NumberFormat(LOC);
+  var taal = ['en', 'es'].indexOf(document.documentElement.lang) >= 0 ? document.documentElement.lang : 'nl';
+  // Ontbreekt een tekst, dan valt hij terug zoals in lib.php: es naar en naar nl, en naar nl.
+  var keten = taal === 'es' ? ['nl', 'en', 'es'] : (taal === 'en' ? ['nl', 'en'] : ['nl']);
+  Promise.all(keten.map(function (t) { return fetch('taal/' + t + '.json?v=' + encodeURIComponent(document.documentElement.dataset.versie || ''), { cache: 'no-cache' }).then(function (r) { return r.json(); }).catch(function () { return {}; }); })).then(function (lijst) {
+    L = {}; lijst.forEach(function (t) { if (t) Object.keys(t).forEach(function (k) { L[k] = t[k]; }); }); LOC = L._locale || LOC; nl = new Intl.NumberFormat(LOC);
     try { sleutel = localStorage.getItem(OPSLAG) || ''; } catch (e) {}
     var h = (location.hash || '').slice(1); if (['overzicht', 'automations', 'mensen', 'activiteit', 'gezondheid'].indexOf(h) >= 0) tab = h;
     if (!sleutel) { toonSlot(); return; }

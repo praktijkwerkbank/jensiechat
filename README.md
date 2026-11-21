@@ -1,6 +1,6 @@
 # Jensiechat (basic version)
 
-[Nederlands: README.nl.md](README.nl.md)
+[Nederlands: README.nl.md](README.nl.md), [Español: README.es.md](README.es.md)
 
 Your own automatic reply for Instagram, on your own web hosting, without a subscription. Someone comments a word you chose (for example GUIDE) under your post or reel, and Jensiechat sends them a private message with a button to your link, posts a short reply under the comment, and counts the clicks. A dashboard shows what happened and whether everything works.
 

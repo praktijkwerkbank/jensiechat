@@ -36,7 +36,7 @@ return [
   'webhook_controlewoord' => '',
 
   // ── Hoe het dashboard eruitziet ──
-  // De taal van het dashboard en de standaardteksten: 'nl' (Nederlands) of 'en' (English).
+  // De taal van het dashboard en de standaardteksten: 'nl' (Nederlands), 'en' (English) of 'es' (Español).
   'taal' => 'nl',
 
   // De naam bovenin het dashboard. Bijvoorbeeld 'Annachat'.

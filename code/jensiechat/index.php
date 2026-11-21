@@ -52,11 +52,11 @@ $t = fn($k) => $h(jc_t($k));
   </header>
 
   <nav class="tabs" aria-label="<?= $t('h.onderdelen') ?>">
-    <button type="button" data-tab="overzicht" aria-current="page"><?= $t('h.tab_overzicht') ?></button>
-    <button type="button" data-tab="automations"><?= $t('h.tab_automations') ?></button>
-    <button type="button" data-tab="mensen"><?= $t('h.tab_mensen') ?></button>
-    <button type="button" data-tab="activiteit"><?= $t('h.tab_activiteit') ?></button>
-    <button type="button" data-tab="gezondheid"><?= $t('h.tab_gezondheid') ?></button>
+    <button type="button" data-tab="overzicht" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 13h4v7H4zM10 4h4v16h-4zM16 9h4v11h-4z"/></svg><span><?= $t('h.tab_overzicht') ?></span></button>
+    <button type="button" data-tab="automations"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 4v5a3 3 0 0 0 3 3h6a3 3 0 0 1 3 3v5"/><circle cx="6" cy="4" r="1.8"/><circle cx="18" cy="20" r="1.8"/><path d="M6 12v8"/></svg><span><?= $t('h.tab_automations') ?></span></button>
+    <button type="button" data-tab="mensen"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19a5.5 5.5 0 0 1 11 0M15.5 5.5a3 3 0 0 1 0 6M17 13.5a5 5 0 0 1 3.5 5"/></svg><span><?= $t('h.tab_mensen') ?></span></button>
+    <button type="button" data-tab="activiteit"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 12h4l2.5-6 5 12 2.5-6h4"/></svg><span><?= $t('h.tab_activiteit') ?></span></button>
+    <button type="button" data-tab="gezondheid"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z"/></svg><span><?= $t('h.tab_gezondheid') ?></span></button>
   </nav>
 
   <!-- Overzicht -->

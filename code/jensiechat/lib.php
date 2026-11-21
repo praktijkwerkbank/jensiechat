@@ -16,7 +16,7 @@
 // Bewaard: gebruikersnaam en -ID, reactie, post, tijd, verstuurd, geklikt. Na 90 dagen worden naam, ID en tekst gewist; de cijfers blijven.
 if (!defined('JC_APP')) { http_response_code(404); exit; }
 
-const JC_VERSIE = '1.0.2';
+const JC_VERSIE = '1.1.0';
 const JC_BEWAAR_DAGEN = 90;          // daarna naam, ID en tekst wissen
 const JC_ZELFDE_PERSOON_UREN = 24;   // dezelfde persoon krijgt hetzelfde bericht hooguit een keer per etmaal
 const JC_PRIVATE_REPLY_DAGEN = 7;    // Meta: een privébericht op een reactie kan tot 7 dagen na de reactie
@@ -62,19 +62,21 @@ if ($JC_CONFIG_PAD === '') {
   elseif ($JC_CONFIG_FOUT === '') $JC_C = $x;
 }
 function jc_cfg($k, $def = '') { global $JC_C; $v = $JC_C[$k] ?? $def; return is_string($v) ? trim($v) : $v; }
-/** De taal van het dashboard en de standaardteksten: 'nl' (standaard) of 'en', uit config.php. */
-function jc_taal() { $t = (string)jc_cfg('taal', 'nl'); return in_array($t, ['nl', 'en'], true) ? $t : 'nl'; }
+/** De taal van het dashboard en de standaardteksten: 'nl' (standaard), 'en' of 'es' (sinds 1.1), uit config.php. */
+function jc_taal() { $t = strtolower((string)jc_cfg('taal', 'nl')); return in_array($t, ['nl', 'en', 'es'], true) ? $t : 'nl'; }
 /** Een tekst uit taal/<taal>.json. {naam} wordt vervangen door $v['naam']. Ontbreekt de tekst, dan de Nederlandse. */
 function jc_t($k, $v = [], $taal = null) {
   static $L = [];
   $taal = $taal ?: jc_taal();
-  foreach ([$taal, 'nl'] as $t) if (!isset($L[$t])) $L[$t] = json_decode((string)@file_get_contents(__DIR__ . '/taal/' . $t . '.json'), true) ?: [];
-  $s = $L[$taal][$k] ?? ($L['nl'][$k] ?? $k);
+  // Ontbreekt een tekst: Spaans valt eerst terug op Engels (beter leesbaar voor een Spaanstalige), daarna op Nederlands.
+  $volg = $taal === 'es' ? ['es', 'en', 'nl'] : [$taal, 'nl'];
+  foreach ($volg as $t) if (!isset($L[$t])) $L[$t] = json_decode((string)@file_get_contents(__DIR__ . '/taal/' . $t . '.json'), true) ?: [];
+  $s = $k; foreach ($volg as $t) if (isset($L[$t][$k])) { $s = $L[$t][$k]; break; }
   foreach ($v as $a => $b) $s = str_replace('{' . $a . '}', (string)$b, $s);
   return $s;
 }
-/** Voor meldingen als de taal nog niet bekend is (geen of een kapotte config.php): beide talen. */
-function jc_t2($k, $v = []) { return jc_t($k, $v, 'nl') . ' / ' . jc_t($k, $v, 'en'); }
+/** Voor meldingen als de taal nog niet bekend is (geen of een kapotte config.php): alle drie de talen. */
+function jc_t2($k, $v = []) { return jc_t($k, $v, 'nl') . ' / ' . jc_t($k, $v, 'en') . ' / ' . jc_t($k, $v, 'es'); }
 
 $JC_ADRES      = rtrim((string)jc_cfg('adres'), '/');
 $JC_APP_ID     = (string)jc_cfg('meta_app_id');
@@ -385,6 +387,7 @@ function jc_automation_slug($slug) { $s = jc_db()->prepare('SELECT * FROM automa
 function jc_norm($t) {
   $t = mb_strtolower((string)$t, 'UTF-8');
   if (class_exists('Normalizer')) { $t = Normalizer::normalize($t, Normalizer::FORM_D); $t = preg_replace('/\p{Mn}+/u', '', $t); }
+  else { $t = strtr($t, ['á' => 'a', 'à' => 'a', 'ä' => 'a', 'â' => 'a', 'é' => 'e', 'è' => 'e', 'ë' => 'e', 'ê' => 'e', 'í' => 'i', 'ì' => 'i', 'ï' => 'i', 'î' => 'i', 'ó' => 'o', 'ò' => 'o', 'ö' => 'o', 'ô' => 'o', 'ú' => 'u', 'ù' => 'u', 'ü' => 'u', 'û' => 'u', 'ñ' => 'n', 'ç' => 'c']); }
   return $t;
 }
 /** Bevat de reactie het trefwoord als los woord? "GIDS", "gids!", "Gids graag" ja; "gidsen" nee. Een trefwoord van meer woorden mag ook. */
