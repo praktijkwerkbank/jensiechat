@@ -16,7 +16,7 @@
 // Bewaard: gebruikersnaam en -ID, reactie, post, tijd, verstuurd, geklikt. Na 90 dagen worden naam, ID en tekst gewist; de cijfers blijven.
 if (!defined('JC_APP')) { http_response_code(404); exit; }
 
-const JC_VERSIE = '1.0.1';
+const JC_VERSIE = '1.0.2';
 const JC_BEWAAR_DAGEN = 90;          // daarna naam, ID en tekst wissen
 const JC_ZELFDE_PERSOON_UREN = 24;   // dezelfde persoon krijgt hetzelfde bericht hooguit een keer per etmaal
 const JC_PRIVATE_REPLY_DAGEN = 7;    // Meta: een privébericht op een reactie kan tot 7 dagen na de reactie
@@ -201,6 +201,14 @@ function jc_data_in_webroot() {
  */
 class JcStmt extends PDOStatement {
   protected function __construct() {}
+  // After one row or one value, close the statement right away (1.0.2). A statement left open holds a read snapshot; if another
+  // process (the second cron job, the webhook) writes meanwhile, every write from this process fails at once with "database is locked",
+  // and retrying does not help while the statement stays open. Rows are always read with foreach or fetchAll in this code, never with
+  // repeated fetch(), so those keep working.
+  public function fetch(int $mode = PDO::FETCH_DEFAULT, int $cursorOrientation = PDO::FETCH_ORI_NEXT, int $cursorOffset = 0): mixed {
+    $r = parent::fetch($mode, $cursorOrientation, $cursorOffset); $this->closeCursor(); return $r;
+  }
+  public function fetchColumn(int $column = 0): mixed { $r = parent::fetchColumn($column); $this->closeCursor(); return $r; }
   public function execute(?array $params = null): bool {
     // Voor een nieuwe poging eerst het statement terugzetten (closeCursor), anders geeft SQLite 'bad parameter or other API misuse'.
     for ($i = 0; ; $i++) {
