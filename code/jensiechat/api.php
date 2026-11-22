@@ -111,7 +111,8 @@ switch ($a) {
     if (jc_config_schrijf(array_merge($c, $nieuw), $JC_CONFIG_PAD) !== '') uit(['ok' => false, 'fout' => jc_t('mk.niet_schrijfbaar')]);
     // Voor de rest van dit verzoek de nieuwe waarden gebruiken, zodat de controle hieronder meteen met het nieuwe token werkt.
     $JC_C = array_merge($c, $nieuw); $GLOBALS['JC_C'] = $JC_C;
-    if (isset($nieuw['meta_token'])) { $JC_TOKEN = $nieuw['meta_token']; jc_set('token_check_ts', 0); }
+    // Nieuw token: het account meteen opnieuw mogen opzoeken (anders wacht dat tot vijf minuten na een eerdere, mislukte poging).
+    if (isset($nieuw['meta_token'])) { $JC_TOKEN = $nieuw['meta_token']; jc_set('token_check_ts', 0); jc_set('ig_id_gezocht', 0); }
     if (isset($nieuw['meta_app_id'])) $JC_APP_ID = $nieuw['meta_app_id'];
     if (isset($nieuw['meta_app_geheim'])) $JC_APP_SECRET = $nieuw['meta_app_geheim'];
     if (isset($nieuw['instagram_id'])) $JC_IG_ID = $nieuw['instagram_id'];

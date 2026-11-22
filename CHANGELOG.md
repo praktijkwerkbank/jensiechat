@@ -2,6 +2,13 @@
 
 All notable changes to Jensiechat are listed here. The version number lives in one place in the code (`JC_VERSIE` in `code/jensiechat/lib.php`) and in the metadata of `SKILL.md`.
 
+## 1.2.1 (2026-11-22)
+
+- Health now points to the right place: messages about a missing or broken token or app secret say "paste it below at Connection with Meta" instead of "put it in config.php".
+- After you save a new token, Jensiechat looks up your Instagram account right away, also when an earlier lookup failed a moment before.
+- An unexpected error before setup no longer creates an empty database (which kept the setup screen closed).
+- Quieter on hosts with `open_basedir`: no warnings when Jensiechat looks for the settings file above the web folder.
+
 ## 1.2.0 (2026-11-21)
 
 - Setup screen: open the address of your Jensiechat folder and a short form asks for the language, a name, a colour and a dashboard password, then writes the settings file for you. No more editing `config.php` by hand (that still works too). For safety the screen only opens while nothing is set up yet and only in the first 24 hours after uploading (an empty file `instellen.aan` opens it again), and it closes for good after saving. Fill it in right after uploading. The dashboard password uses plain characters only (é or € do not work in the login), and "Make one for me" makes a strong one.

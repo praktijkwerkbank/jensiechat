@@ -16,7 +16,7 @@
 // Bewaard: gebruikersnaam en -ID, reactie, post, tijd, verstuurd, geklikt. Na 90 dagen worden naam, ID en tekst gewist; de cijfers blijven.
 if (!defined('JC_APP')) { http_response_code(404); exit; }
 
-const JC_VERSIE = '1.2.0';
+const JC_VERSIE = '1.2.1';
 const JC_BEWAAR_DAGEN = 90;          // daarna naam, ID en tekst wissen
 const JC_ZELFDE_PERSOON_UREN = 24;   // dezelfde persoon krijgt hetzelfde bericht hooguit een keer per etmaal
 const JC_PRIVATE_REPLY_DAGEN = 7;    // Meta: een privébericht op een reactie kan tot 7 dagen na de reactie
@@ -43,7 +43,7 @@ function jc_config_pad() {
   if (getenv('JC_CONFIG')) $k[] = (string)getenv('JC_CONFIG');
   if (jc_webroot() !== '') $k[] = dirname(jc_webroot()) . '/jensiechat-config.php';
   $k[] = __DIR__ . '/config.php';
-  foreach ($k as $pad) if (is_file($pad)) return $pad;
+  foreach ($k as $pad) if (@is_file($pad)) return $pad; // @: op een host met open_basedir geeft een map boven de webmap een waarschuwing
   return '';
 }
 $JC_C = []; $JC_CONFIG_FOUT = ''; $JC_CONFIG_VARS = []; $JC_CONFIG_PAD = jc_config_pad();
@@ -112,7 +112,7 @@ function jc_config_alleen_waarden($pad) {
 }
 /** Waar het invulscherm het instellingenbestand neerzet: liefst een map boven de webmap, anders in deze map. */
 function jc_config_doel() {
-  if (jc_webroot() !== '') { $p = dirname(jc_webroot()) . '/jensiechat-config.php'; if (is_writable(dirname($p))) return $p; }
+  if (jc_webroot() !== '') { $p = dirname(jc_webroot()) . '/jensiechat-config.php'; if (@is_writable(dirname($p))) return $p; }
   return __DIR__ . '/config.php';
 }
 /** De taal van het dashboard en de standaardteksten: 'nl' (standaard), 'en' of 'es' (sinds 1.1), uit config.php. */
@@ -220,7 +220,8 @@ function jc_stop($melding, $code = 503) {
 }
 // Een onverwachte fout geeft een melding en geen witte pagina. De details gaan naar het logboek, niet naar de bezoeker.
 set_exception_handler(function ($e) {
-  jc_log_veilig('fout', jc_t('log.onverwacht') . ' ' . $e->getMessage() . ' (' . basename($e->getFile()) . ':' . $e->getLine() . ')');
+  // Zonder instellingenbestand niet loggen: dat zou een lege database aanmaken, en die houdt het invulscherm dicht.
+  if ($GLOBALS['JC_CONFIG_PAD'] !== '') jc_log_veilig('fout', jc_t('log.onverwacht') . ' ' . $e->getMessage() . ' (' . basename($e->getFile()) . ':' . $e->getLine() . ')');
   jc_stop($e instanceof JcFout ? $e->getMessage() : jc_t('stop.onverwacht'), 500);
 });
 class JcFout extends RuntimeException {}
@@ -872,7 +873,7 @@ function jc_klaar_met_antwoord() {
 // ── Klopt de instelling? Anders hier stoppen, met een duidelijke melding. ────
 // Nog helemaal niets ingesteld en het invulscherm staat er: het dashboard stuurt daarheen (sinds 1.2).
 /** Staat er al een database van Jensiechat (op een van de twee standaardplekken)? Dan is dit geen nieuwe installatie. */
-function jc_db_bestaat() { foreach ([jc_webroot() !== '' ? dirname(jc_webroot()) . '/jensiechat-data' : '', __DIR__ . '/data'] as $m) if ($m !== '' && is_file($m . '/jensiechat.db')) return true; return false; }
+function jc_db_bestaat() { foreach ([jc_webroot() !== '' ? dirname(jc_webroot()) . '/jensiechat-data' : '', __DIR__ . '/data'] as $m) if ($m !== '' && @is_file($m . '/jensiechat.db')) return true; return false; }
 if (JC_APP === 'html' && $JC_CONFIG_PAD === '' && !jc_db_bestaat() && is_file(__DIR__ . '/instellen.php')) { header('Location: instellen.php', true, 302); exit; }
 // Is alles ingesteld, dan mag een achtergebleven instellen.aan weg: anders blijft het invulscherm openzetbaar.
 if (JC_APP === 'html' && $JC_CONFIG_PAD !== '' && is_file(__DIR__ . '/instellen.aan')) @unlink(__DIR__ . '/instellen.aan');

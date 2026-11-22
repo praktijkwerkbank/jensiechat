@@ -4,7 +4,7 @@ description: "Self-hosted Instagram comment-to-DM: a keyword under a post gets a
 license: MIT
 metadata:
   author: Jens Kemna, Praktijkwerkbank (praktijkwerkbank.nl)
-  version: "1.2.0 (basic version)"
+  version: "1.2.1 (basic version)"
   tested: "Locally against a simulated Meta API (November 2026). The underlying code runs live on the maker's own hosting."
 ---
 
